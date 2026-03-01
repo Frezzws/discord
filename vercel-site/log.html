@@ -6,49 +6,31 @@
     <title>Giriş</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Outfit', system-ui, sans-serif;
-            background: #050508;
-            color: #e0e0e0;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: #08080c;
+            color: #e4e4e7;
             padding: 2rem 1.5rem;
             min-height: 100vh;
         }
-        .page {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: #fff;
-        }
-        .auth {
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.75rem;
-        }
+        .page { max-width: 720px; margin: 0 auto; }
+        h1 { font-size: 1.35rem; font-weight: 700; margin-bottom: 1.5rem; color: #fff; }
+        .auth { margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
         .auth input {
             padding: 0.65rem 1rem;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             color: #fff;
             border-radius: 10px;
-            width: 260px;
+            width: 240px;
             font-family: inherit;
             font-size: 0.95rem;
         }
         .auth input::placeholder { color: rgba(255,255,255,0.4); }
-        .auth input:focus {
-            outline: none;
-            border-color: #5865f2;
-            box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.2);
-        }
+        .auth input:focus { outline: none; border-color: #5865f2; }
         .auth button {
             padding: 0.65rem 1.25rem;
             background: #5865f2;
@@ -59,40 +41,40 @@
             font-family: inherit;
             font-weight: 600;
             font-size: 0.95rem;
-            transition: background 0.2s, transform 0.2s;
         }
-        .auth button:hover {
-            background: #4752c4;
-            transform: translateY(-1px);
-        }
+        .auth button:hover { background: #4752c4; }
         .error { color: #f87171; margin-top: 0.25rem; font-size: 0.9rem; }
-        .content-box {
+        .list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1rem;
             background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px;
-            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            font-size: 0.9rem;
         }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); }
-        th {
-            color: rgba(255,255,255,0.5);
+        .row:hover { background: rgba(255,255,255,0.06); }
+        .row-ip {
             font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            color: #22d3ee;
+            font-family: ui-monospace, monospace;
+            min-width: 120px;
         }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.02); }
-        .type-visit { color: #7dd3fc; font-weight: 500; }
-        .type-click { color: #86efac; font-weight: 500; }
-        .empty-state {
-            margin-top: 0;
-            padding: 2rem;
-            text-align: center;
+        .row-time { color: rgba(255,255,255,0.5); font-size: 0.85rem; }
+        .row-type {
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
-        .empty-title { color: rgba(255,255,255,0.6); font-weight: 600; margin-bottom: 0.75rem; font-size: 1.1rem; }
-        .empty-hint { color: rgba(255,255,255,0.45); font-size: 0.9rem; line-height: 1.6; max-width: 380px; margin: 0 auto; }
-        .empty-hint strong { color: rgba(255,255,255,0.7); }
+        .row-type.visit { background: rgba(34, 211, 238, 0.15); color: #22d3ee; }
+        .row-type.click { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .row-ua { color: rgba(255,255,255,0.45); font-size: 0.8rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .empty-state { padding: 2.5rem; text-align: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; }
+        .empty-title { color: rgba(255,255,255,0.5); font-weight: 600; margin-bottom: 0.5rem; }
+        .empty-hint { color: rgba(255,255,255,0.4); font-size: 0.85rem; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -110,6 +92,11 @@
         var btn = document.getElementById('btn');
         var err = document.getElementById('err');
         var content = document.getElementById('content');
+        function formatTime(iso) {
+            if (!iso) return '-';
+            var d = new Date(iso);
+            return d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        }
         function load() {
             var k = keyInp.value.trim();
             if (!k) { err.textContent = 'Anahtar girin.'; return; }
@@ -122,15 +109,22 @@
                 })
                 .then(function(logs) {
                     if (logs.length === 0) {
-                        content.innerHTML = '<div class="content-box empty-state"><p class="empty-title">Kayıt yok</p><p class="empty-hint">Henüz veri yok. Vercel’de Redis bağlı değilse bağlayıp Redeploy yap.</p></div>';
+                        content.innerHTML = '<div class="empty-state"><p class="empty-title">Kayıt yok</p><p class="empty-hint">Ziyaret ve tıklamalar burada listelenir. Redis bağlı değilse Vercel → Storage → Redis bağlayıp Redeploy yap.</p></div>';
                         return;
                     }
-                    var html = '<div class="content-box"><table><thead><tr><th>Tarih</th><th>Tip</th><th>IP</th><th>Discord</th><th>Tarayıcı</th></tr></thead><tbody>';
+                    var html = '<div class="list">';
                     logs.forEach(function(l) {
-                        var cls = l.type === 'click' ? 'type-click' : 'type-visit';
-                        html += '<tr><td>' + (l.time || '-') + '</td><td class="' + cls + '">' + (l.type || '-') + '</td><td>' + (l.ip || '-') + '</td><td>' + (l.discord || '-') + '</td><td>' + (l.userAgent ? l.userAgent.slice(0,55) + (l.userAgent.length > 55 ? '…' : '') : '-') + '</td></tr>';
+                        var typeClass = l.type === 'click' ? 'click' : 'visit';
+                        var ua = (l.userAgent || '').slice(0, 50);
+                        if ((l.userAgent || '').length > 50) ua += '…';
+                        html += '<div class="row">';
+                        html += '<span class="row-ip">' + (l.ip || '-') + '</span>';
+                        html += '<span class="row-time">' + formatTime(l.time) + '</span>';
+                        html += '<span class="row-type ' + typeClass + '">' + (l.type || '-') + '</span>';
+                        html += '<span class="row-ua" title="' + (l.userAgent || '').replace(/"/g, '&quot;') + '">' + (ua || '-') + '</span>';
+                        html += '</div>';
                     });
-                    html += '</tbody></table></div>';
+                    html += '</div>';
                     content.innerHTML = html;
                 })
                 .catch(function() {
