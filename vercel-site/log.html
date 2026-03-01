@@ -3,31 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log</title>
+    <title>Site log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 1.5rem; min-height: 100vh; }
-        h1 { font-size: 1.25rem; margin-bottom: 1rem; }
-        .auth { margin-bottom: 1.5rem; }
-        .auth input { padding: 0.5rem 0.75rem; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 6px; width: 220px; }
-        .auth button { padding: 0.5rem 1rem; background: #333; color: #fff; border: none; border-radius: 6px; cursor: pointer; margin-left: 0.5rem; }
-        .auth button:hover { background: #444; }
-        .error { color: #e55; margin-top: 0.5rem; font-size: 0.9rem; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid #222; }
-        th { color: #888; font-weight: 600; }
-        .type-visit { color: #8af; }
-        .type-click { color: #8f8; }
+        body {
+            font-family: 'Outfit', system-ui, sans-serif;
+            background: #050508;
+            color: #e0e0e0;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+        }
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
+        .auth {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .auth input {
+            padding: 0.65rem 1rem;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #fff;
+            border-radius: 10px;
+            width: 260px;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        .auth input::placeholder { color: rgba(255,255,255,0.4); }
+        .auth input:focus {
+            outline: none;
+            border-color: #5865f2;
+            box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.2);
+        }
+        .auth button {
+            padding: 0.65rem 1.25rem;
+            background: #5865f2;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .auth button:hover {
+            background: #4752c4;
+            transform: translateY(-1px);
+        }
+        .error { color: #f87171; margin-top: 0.25rem; font-size: 0.9rem; }
+        .content-box {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        th {
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        .type-visit { color: #7dd3fc; font-weight: 500; }
+        .type-click { color: #86efac; font-weight: 500; }
+        .empty-state {
+            margin-top: 0;
+            padding: 2rem;
+            text-align: center;
+        }
+        .empty-title { color: rgba(255,255,255,0.6); font-weight: 600; margin-bottom: 0.75rem; font-size: 1.1rem; }
+        .empty-hint { color: rgba(255,255,255,0.45); font-size: 0.9rem; line-height: 1.6; max-width: 380px; margin: 0 auto; }
+        .empty-hint strong { color: rgba(255,255,255,0.7); }
     </style>
 </head>
 <body>
-    <h1>Site log</h1>
-    <div class="auth">
-        <input type="password" id="key" placeholder="Gizli anahtar" autocomplete="off">
-        <button type="button" id="btn">Gir</button>
-        <div class="error" id="err"></div>
+    <div class="page">
+        <h1>Site log</h1>
+        <div class="auth">
+            <input type="password" id="key" placeholder="Gizli anahtar (Vercel LOG_SECRET)" autocomplete="off">
+            <button type="button" id="btn">Gir</button>
+            <div class="error" id="err"></div>
+        </div>
+        <div id="content"></div>
     </div>
-    <div id="content"></div>
     <script>
         var keyInp = document.getElementById('key');
         var btn = document.getElementById('btn');
@@ -37,6 +114,7 @@
             var k = keyInp.value.trim();
             if (!k) { err.textContent = 'Anahtar girin.'; return; }
             err.textContent = '';
+            content.innerHTML = '';
             fetch('/api/logs?key=' + encodeURIComponent(k))
                 .then(function(r) {
                     if (!r.ok) throw new Error('Yetkisiz');
@@ -44,15 +122,15 @@
                 })
                 .then(function(logs) {
                     if (logs.length === 0) {
-                        content.innerHTML = '<p style="color:#666;">Kayıt yok.</p>';
+                        content.innerHTML = '<div class="content-box empty-state"><p class="empty-title">Kayıt yok</p><p class="empty-hint">Ziyaret ve "Discord\'a Ekle" tıklamaları burada görünür. Kayıt düşmüyorsa Vercel Dashboard → Proje → <strong>Storage</strong> → <strong>Create Database → KV</strong> oluşturup projeye bağla, sonra Redeploy yap.</p></div>';
                         return;
                     }
-                    var html = '<table><thead><tr><th>Tarih</th><th>Tip</th><th>IP</th><th>Discord</th><th>Tarayıcı</th></tr></thead><tbody>';
+                    var html = '<div class="content-box"><table><thead><tr><th>Tarih</th><th>Tip</th><th>IP</th><th>Discord</th><th>Tarayıcı</th></tr></thead><tbody>';
                     logs.forEach(function(l) {
                         var cls = l.type === 'click' ? 'type-click' : 'type-visit';
-                        html += '<tr><td>' + (l.time || '-') + '</td><td class="' + cls + '">' + (l.type || '-') + '</td><td>' + (l.ip || '-') + '</td><td>' + (l.discord || '-') + '</td><td>' + (l.userAgent ? l.userAgent.slice(0,60) + (l.userAgent.length > 60 ? '…' : '') : '-') + '</td></tr>';
+                        html += '<tr><td>' + (l.time || '-') + '</td><td class="' + cls + '">' + (l.type || '-') + '</td><td>' + (l.ip || '-') + '</td><td>' + (l.discord || '-') + '</td><td>' + (l.userAgent ? l.userAgent.slice(0,55) + (l.userAgent.length > 55 ? '…' : '') : '-') + '</td></tr>';
                     });
-                    html += '</tbody></table>';
+                    html += '</tbody></table></div>';
                     content.innerHTML = html;
                 })
                 .catch(function() {

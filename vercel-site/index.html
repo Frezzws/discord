@@ -6,61 +6,293 @@
     <title>Botu Ekle — Discord</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', -apple-system, sans-serif; min-height: 100vh; overflow-x: hidden; color: #fff; background: #000; }
-        .bg { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse 100% 60% at 50% -10%, #0d0d0d 0%, transparent 50%), radial-gradient(ellipse 80% 50% at 50% 50%, #050505 0%, transparent 70%), linear-gradient(180deg, #000 0%, #0a0a0a 50%, #000 100%); }
-        .stars { position: fixed; inset: 0; z-index: 1; background-image: radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.5), transparent), radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,0.35), transparent), radial-gradient(2px 2px at 60% 20%, rgba(255,255,255,0.45), transparent), radial-gradient(2px 2px at 80% 50%, rgba(255,255,255,0.3), transparent), radial-gradient(2px 2px at 15% 80%, rgba(255,255,255,0.4), transparent), radial-gradient(2px 2px at 90% 15%, rgba(255,255,255,0.25), transparent); background-size: 200% 200%; animation: twinkle 8s ease-in-out infinite; opacity: 0.8; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.5; } }
-        .planet { position: fixed; top: 8%; left: 50%; transform: translateX(-50%); width: min(420px, 80vw); height: min(420px, 80vw); border-radius: 50%; z-index: 2; background: radial-gradient(circle at 35% 35%, #2a2a35, #1a1a22 50%, #0c0c10); box-shadow: inset -20px -20px 40px rgba(0,0,0,0.6), inset 10px 10px 25px rgba(255,255,255,0.04), 0 0 60px rgba(0,0,0,0.5); }
-        .clouds { position: fixed; bottom: 0; left: 0; right: 0; height: 180px; z-index: 2; background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%); pointer-events: none; }
-        .clouds::before, .clouds::after { content: ''; position: absolute; bottom: 0; height: 120px; border-radius: 50%; background: rgba(20,20,25,0.5); filter: blur(25px); }
-        .clouds::before { left: -10%; width: 50%; }
-        .clouds::after { right: -10%; width: 45%; }
-        .wrap { position: relative; z-index: 10; max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        header { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 2rem; max-width: 720px; margin: 0 auto; }
-        .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.35rem; color: #fff; text-decoration: none; }
-        .logo-icon { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #5865f2, #7289da); box-shadow: 0 0 12px rgba(88, 101, 242, 0.5); }
-        nav a { color: rgba(255,255,255,0.85); text-decoration: none; font-weight: 500; font-size: 0.95rem; padding: 0.5rem 1rem; border-radius: 8px; transition: color 0.2s, background 0.2s; }
-        nav a:hover { color: #fff; background: rgba(255,255,255,0.08); }
-        .hero { margin-top: 2rem; }
-        h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; color: #fff; }
-        h1 .highlight { background: linear-gradient(135deg, #5865f2, #7289da); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .desc { font-size: 1.1rem; line-height: 1.6; color: rgba(255,255,255,0.8); max-width: 480px; margin: 0 auto 2.5rem; }
+        :root {
+            --discord: #5865f2;
+            --discord-hover: #4752c4;
+            --glass: rgba(255,255,255,0.06);
+            --glass-border: rgba(255,255,255,0.1);
+            --glow: rgba(88, 101, 242, 0.35);
+        }
+        body {
+            font-family: 'Outfit', -apple-system, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #fff;
+            background: #050508;
+        }
+        /* Arka plan: mesh gradient + noise */
+        .bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 120% 80% at 20% 0%, rgba(88, 101, 242, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse 80% 60% at 80% 20%, rgba(114, 137, 218, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 100% at 50% 80%, rgba(30, 30, 50, 0.6) 0%, transparent 50%),
+                linear-gradient(180deg, #050508 0%, #0a0a12 40%, #08080d 100%);
+        }
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 20%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 20%, transparent 70%);
+        }
+        .glow-orb {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .glow-orb-1 { top: -200px; left: -100px; background: var(--discord); }
+        .glow-orb-2 { top: 30%; right: -150px; background: rgba(114, 137, 218, 0.5); }
+        .wrap {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 5rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--discord), #7289da);
+            box-shadow: 0 0 24px var(--glow);
+        }
+        nav a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            transition: color 0.2s, background 0.2s;
+        }
+        nav a:hover { color: #fff; background: var(--glass); }
+        .hero { margin-top: 1rem; }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.9rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.03em;
+        }
+        .badge span { color: var(--discord); }
+        h1 {
+            font-size: clamp(2.2rem, 5.5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 0.75rem;
+            color: #fff;
+            letter-spacing: -0.03em;
+        }
+        h1 .highlight {
+            background: linear-gradient(135deg, #7289da, var(--discord));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .desc {
+            font-size: 1.15rem;
+            line-height: 1.65;
+            color: rgba(255,255,255,0.75);
+            max-width: 480px;
+            margin: 0 auto 2rem;
+        }
+        /* Özellik kartları */
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .feature-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.85);
+        }
+        .feature-pill svg { width: 18px; height: 18px; opacity: 0.9; }
         .cta { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; align-items: center; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 1rem 1.75rem; font-family: inherit; font-size: 1rem; font-weight: 600; text-decoration: none; border-radius: 12px; border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, filter 0.2s; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-        .btn-primary { background: #5865f2; color: #fff; box-shadow: 0 4px 16px rgba(88, 101, 242, 0.4); }
-        .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 6px 24px rgba(88, 101, 242, 0.5); }
-        .btn-primary svg { width: 22px; height: 22px; }
-        .btn-secondary { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
-        .btn-secondary:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.3); }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+            padding: 1rem 1.9rem;
+            font-family: inherit;
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+        }
+        .btn-primary {
+            background: var(--discord);
+            color: #fff;
+            box-shadow: 0 4px 20px var(--glow);
+        }
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 8px 28px var(--glow);
+        }
+        .btn-primary svg { width: 24px; height: 24px; }
+        .btn-secondary {
+            background: var(--glass);
+            color: #fff;
+            border: 1px solid var(--glass-border);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.18);
+        }
         .btn-secondary svg { width: 20px; height: 20px; }
-        .maker-box { margin-top: 2.5rem; padding: 1rem 1.5rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; display: inline-flex; align-items: center; gap: 1rem; text-decoration: none; color: rgba(255,255,255,0.9); transition: background 0.2s, border-color 0.2s, transform 0.2s; }
-        .maker-box:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.18); transform: translateY(-1px); color: #fff; }
-        .maker-label { font-size: 0.8rem; font-weight: 500; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; }
-        .maker-name { font-size: 1rem; font-weight: 600; }
-        .maker-box .göz-at { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; font-weight: 600; color: #5865f2; }
+        .maker-box {
+            margin-top: 2.5rem;
+            padding: 1.1rem 1.6rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 1.1rem;
+            text-decoration: none;
+            color: rgba(255,255,255,0.9);
+            transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+        .maker-box:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        .maker-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .maker-name { font-size: 1.05rem; font-weight: 600; }
+        .maker-box .göz-at {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--discord);
+        }
         .maker-box .göz-at svg { width: 16px; height: 16px; }
-        .log-entry { position: fixed; bottom: 1rem; left: 1rem; z-index: 100; }
-        .log-entry a { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; color: rgba(255,255,255,0.35); text-decoration: none; font-size: 1.1rem; font-weight: 600; transition: color 0.2s; }
+        .log-entry {
+            position: fixed;
+            bottom: 1.25rem;
+            left: 1.25rem;
+            z-index: 100;
+        }
+        .log-entry a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            color: rgba(255,255,255,0.3);
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: color 0.2s;
+            border-radius: 8px;
+        }
         .log-entry a:hover { color: rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
     <div class="bg"></div>
-    <div class="stars"></div>
-    <div class="planet"></div>
-    <div class="clouds"></div>
+    <div class="grid-bg"></div>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
     <div class="wrap">
         <header>
             <a href="#" class="logo"><span class="logo-icon"></span>Bot</a>
             <nav><a href="https://discord.gg/norvec" target="_blank" rel="noopener">Destek Sunucusu</a></nav>
         </header>
         <section class="hero">
+            <div class="badge">Discord <span>•</span> DM & Grup</div>
             <h1>Hesabını bir üst<br><span class="highlight">seviyeye taşı.</span></h1>
             <p class="desc">DM ve gruplarda mesaj, görsel ve dosya paylaşımı. Hesabına ekle, slash komutlarla anında kullan.</p>
+            <div class="features">
+                <span class="feature-pill">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Mesaj & Görsel
+                </span>
+                <span class="feature-pill">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Slash komutlar
+                </span>
+                <span class="feature-pill">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Güvenli
+                </span>
+            </div>
             <div class="cta">
                 <a href="https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands" id="btn-discord-add" class="btn btn-primary" target="_blank" rel="noopener">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
