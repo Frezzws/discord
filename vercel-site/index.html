@@ -92,8 +92,8 @@
             inset: 0;
             z-index: 1;
             background-image:
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+                linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
             background-size: 72px 72px;
             animation: gridMove 25s linear infinite;
             mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, black 5%, transparent 55%);
@@ -104,8 +104,8 @@
             inset: 0;
             z-index: 1;
             background-image:
-                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
             background-size: 120px 120px;
             animation: gridMove2 35s linear infinite;
             mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black 15%, transparent 60%);
@@ -405,24 +405,35 @@
         .modal {
             background: var(--gray-2);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            max-width: 420px;
+            border-radius: 18px;
+            max-width: 520px;
             width: 100%;
-            overflow: hidden;
-            box-shadow: 0 24px 48px rgba(0,0,0,0.6);
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 28px 56px rgba(0,0,0,0.65);
         }
         .modal-header {
-            padding: 1.25rem 1.5rem;
+            padding: 1.35rem 1.75rem;
             border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .modal-header-title {
             font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            color: var(--white-soft);
+            color: var(--white);
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
+        .modal-header-dev {
+            font-size: 0.85rem;
+            color: var(--white-soft);
+            font-weight: 500;
+        }
         .modal-bots {
-            padding: 0.75rem;
+            padding: 1rem 1.25rem;
         }
         .modal-bot {
             display: flex;
@@ -489,8 +500,56 @@
         }
         .modal-close:hover { color: var(--white); border-color: var(--border-hover); }
         .modal-wrap { position: relative; }
-        /* Nasıl kullanılır */
-        .how-wrap { margin-top: 1.25rem; animation: fadeUp 0.7s ease-out 0.8s both; }
+        /* Nasıl kullanılır (modal içinde) */
+        .modal-how {
+            padding: 0 1.25rem 1.25rem;
+            border-top: 1px solid var(--border);
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+        }
+        .modal-how-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            justify-content: center;
+            padding: 0.65rem 1rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--white-soft);
+            background: var(--gray-1);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .modal-how-btn:hover { color: var(--white); border-color: var(--border-hover); background: var(--gray-3); }
+        .modal-how-btn svg { width: 18px; height: 18px; transition: transform 0.25s; }
+        .modal-how-btn.is-open svg { transform: rotate(180deg); }
+        .modal-how-content {
+            margin-top: 0.75rem;
+            padding: 1rem 1.25rem;
+            background: var(--gray-1);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: left;
+            display: none;
+        }
+        .modal-how-content.is-open { display: block; }
+        .modal-how-content h3 {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+        .modal-how-content ol { padding-left: 1.25rem; color: var(--white-soft); font-size: 0.88rem; line-height: 1.75; }
+        .modal-how-content a { color: var(--white); text-decoration: underline; text-underline-offset: 3px; }
+        .modal-how-content .cmd { font-family: var(--font-mono); font-size: 0.8rem; color: var(--white-soft); }
+        /* Ana sayfadaki nasıl kullanılır (gizli, artık modalda) */
+        .how-wrap { display: none; }
         .how-btn {
             display: inline-flex;
             align-items: center;
@@ -562,7 +621,7 @@
     </div>
     <div class="wrap">
         <header>
-            <a href="#" class="logo"><span class="logo-icon"></span>Bot</a>
+            <a href="#" class="logo" aria-label="Ana sayfa"><span class="logo-icon"></span></a>
             <nav><a href="https://discord.gg/norvec" target="_blank" rel="noopener">Destek Sunucusu</a></nav>
         </header>
         <section class="hero">
@@ -621,7 +680,10 @@
         <div class="modal-wrap">
             <button type="button" class="modal-close" id="modal-close" aria-label="Kapat">×</button>
             <div class="modal">
-                <div class="modal-header">Botlar</div>
+                <div class="modal-header">
+                    <span class="modal-header-title">BOTLAR</span>
+                    <span class="modal-header-dev">@frezzgodd_</span>
+                </div>
                 <div class="modal-bots">
                     <div class="modal-bot is-first">
                         <div class="modal-bot-info">
@@ -634,6 +696,19 @@
                             </div>
                         </div>
                         <a href="https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands" id="modal-invite-link" class="modal-bot-add" target="_blank" rel="noopener">Ekle</a>
+                    </div>
+                </div>
+                <div class="modal-how">
+                    <button type="button" class="modal-how-btn" id="modal-how-btn" aria-expanded="false">
+                        Spam Botu nasıl kullanılır
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                    <div class="modal-how-content" id="modal-how-content">
+                        <h3># Spam Botu Nasıl Kullanılır?</h3>
+                        <ol>
+                            <li>Botu öncelikle hesabına eklemen gerekiyor. <a href="https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands" target="_blank" rel="noopener">Eklemek İçin Tıkla</a></li>
+                            <li>Ardından botun <span class="cmd">/</span> komutlarını kullanabilirsin: <span class="cmd">/mesaj</span>, <span class="cmd">/dosya</span>, mesaj vs.</li>
+                        </ol>
                     </div>
                 </div>
             </div>
@@ -652,13 +727,13 @@
             if (btnClose) btnClose.addEventListener('click', function() { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden', 'true'); });
             if (modal) modal.addEventListener('click', function(e) { if (e.target === modal) { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden', 'true'); } });
 
-            var howBtn = document.getElementById('how-btn');
-            var howContent = document.getElementById('how-content');
-            if (howBtn && howContent) {
-                howBtn.addEventListener('click', function() {
-                    var open = howContent.classList.toggle('is-open');
-                    howBtn.classList.toggle('is-open', open);
-                    howBtn.setAttribute('aria-expanded', open);
+            var modalHowBtn = document.getElementById('modal-how-btn');
+            var modalHowContent = document.getElementById('modal-how-content');
+            if (modalHowBtn && modalHowContent) {
+                modalHowBtn.addEventListener('click', function() {
+                    var open = modalHowContent.classList.toggle('is-open');
+                    modalHowBtn.classList.toggle('is-open', open);
+                    modalHowBtn.setAttribute('aria-expanded', open);
                 });
             }
         })();
