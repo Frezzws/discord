@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 1.5rem; min-height: 100vh; }
+        h1 { font-size: 1.25rem; margin-bottom: 1rem; }
+        .auth { margin-bottom: 1.5rem; }
+        .auth input { padding: 0.5rem 0.75rem; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 6px; width: 220px; }
+        .auth button { padding: 0.5rem 1rem; background: #333; color: #fff; border: none; border-radius: 6px; cursor: pointer; margin-left: 0.5rem; }
+        .auth button:hover { background: #444; }
+        .error { color: #e55; margin-top: 0.5rem; font-size: 0.9rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid #222; }
+        th { color: #888; font-weight: 600; }
+        .type-visit { color: #8af; }
+        .type-click { color: #8f8; }
+    </style>
+</head>
+<body>
+    <h1>Site log</h1>
+    <div class="auth">
+        <input type="password" id="key" placeholder="Gizli anahtar" autocomplete="off">
+        <button type="button" id="btn">Gir</button>
+        <div class="error" id="err"></div>
+    </div>
+    <div id="content"></div>
+    <script>
+        var keyInp = document.getElementById('key');
+        var btn = document.getElementById('btn');
+        var err = document.getElementById('err');
+        var content = document.getElementById('content');
+        function load() {
+            var k = keyInp.value.trim();
+            if (!k) { err.textContent = 'Anahtar girin.'; return; }
+            err.textContent = '';
+            fetch('/api/logs?key=' + encodeURIComponent(k))
+                .then(function(r) {
+                    if (!r.ok) throw new Error('Yetkisiz');
+                    return r.json();
+                })
+                .then(function(logs) {
+                    if (logs.length === 0) {
+                        content.innerHTML = '<p style="color:#666;">Kayıt yok.</p>';
+                        return;
+                    }
+                    var html = '<table><thead><tr><th>Tarih</th><th>Tip</th><th>IP</th><th>Discord</th><th>Tarayıcı</th></tr></thead><tbody>';
+                    logs.forEach(function(l) {
+                        var cls = l.type === 'click' ? 'type-click' : 'type-visit';
+                        html += '<tr><td>' + (l.time || '-') + '</td><td class="' + cls + '">' + (l.type || '-') + '</td><td>' + (l.ip || '-') + '</td><td>' + (l.discord || '-') + '</td><td>' + (l.userAgent ? l.userAgent.slice(0,60) + (l.userAgent.length > 60 ? '…' : '') : '-') + '</td></tr>';
+                    });
+                    html += '</tbody></table>';
+                    content.innerHTML = html;
+                })
+                .catch(function() {
+                    err.textContent = 'Yetkisiz veya hata.';
+                    content.innerHTML = '';
+                });
+        }
+        btn.addEventListener('click', load);
+        keyInp.addEventListener('keydown', function(e) { if (e.key === 'Enter') load(); });
+    </script>
+</body>
+</html>
