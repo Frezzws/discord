@@ -1,3 +1,11 @@
+function getRedis() {
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+  if (!url || !token) return null;
+  const { Redis } = require('@upstash/redis');
+  return new Redis({ url, token });
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
     res.status(405).end();
@@ -12,16 +20,18 @@ module.exports = async (req, res) => {
   }
   let list = [];
   try {
-    const { kv } = require('@vercel/kv');
-    const raw = await kv.lrange('site-logs', 0, -1);
-    list = (raw || []).map((s) => {
-      try {
-        return typeof s === 'string' ? JSON.parse(s) : s;
-      } catch {
-        return null;
-      }
-    }).filter(Boolean);
-    list.reverse();
+    const redis = getRedis();
+    if (redis) {
+      const raw = await redis.lrange('site-logs', 0, -1);
+      list = (raw || []).map((s) => {
+        try {
+          return typeof s === 'string' ? JSON.parse(s) : s;
+        } catch {
+          return null;
+        }
+      }).filter(Boolean);
+      list.reverse();
+    }
   } catch (_) {
     list = [];
   }

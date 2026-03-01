@@ -17,9 +17,9 @@ BURADA OLMAYAN (güvende):
 
 VERCEL'E NASIL BAĞLANIR?
 
-1) GitHub'a sadece "vercel-site" klasörünü at
+1) GitHub'a sadece "site" klasörünü at
    - Yeni bir repo aç: örn. "bot-davet-sitesi"
-   - Sadece vercel-site içindeki dosyaları o repo'ya koy
+   - Sadece site içindeki dosyaları o repo'ya koy
    - (Bu klasörü kopyala, içeriğini yeni repo'ya yapıştır)
 
    VEYA
@@ -27,7 +27,7 @@ VERCEL'E NASIL BAĞLANIR?
 2) Tüm projeyi GitHub'a atıyorsan
    - Vercel'de projeyi seç
    - Settings → General → Root Directory
-   - "vercel-site" yaz (veya fotolu spam botu/vercel-site)
+   - "site" yaz (veya fotolu spam botu/site)
    - Böylece Vercel SADECE bu klasörü kullanır, dışarıdaki bot kodları GİTMEZ.
 
 3) Vercel'de Environment Variables ekle:

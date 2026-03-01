@@ -4,6 +4,14 @@ const getIp = (req) => {
   return req.socket?.remoteAddress || 'unknown';
 };
 
+function getRedis() {
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+  if (!url || !token) return null;
+  const { Redis } = require('@upstash/redis');
+  return new Redis({ url, token });
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
     res.status(405).end();
@@ -20,8 +28,8 @@ module.exports = async (req, res) => {
     discord: '-'
   });
   try {
-    const { kv } = require('@vercel/kv');
-    await kv.lpush('site-logs', entry);
+    const redis = getRedis();
+    if (redis) await redis.lpush('site-logs', entry);
   } catch (_) {}
   res.setHeader('Content-Type', 'text/plain');
   res.status(200).end('ok');
