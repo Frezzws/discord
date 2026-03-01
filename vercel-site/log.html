@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site log</title>
+    <title>Giriş</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -97,9 +97,9 @@
 </head>
 <body>
     <div class="page">
-        <h1>Site log</h1>
+        <h1>Giriş</h1>
         <div class="auth">
-            <input type="password" id="key" placeholder="Gizli anahtar (Vercel LOG_SECRET)" autocomplete="off">
+            <input type="password" id="key" placeholder="Anahtar" autocomplete="off">
             <button type="button" id="btn">Gir</button>
             <div class="error" id="err"></div>
         </div>
@@ -122,7 +122,7 @@
                 })
                 .then(function(logs) {
                     if (logs.length === 0) {
-                        content.innerHTML = '<div class="content-box empty-state"><p class="empty-title">Kayıt yok</p><p class="empty-hint">Ziyaret ve "Discord\'a Ekle" tıklamaları burada görünür. Kayıt düşmüyorsa Vercel Dashboard → Proje → <strong>Storage</strong> → <strong>Create Database → KV</strong> oluşturup projeye bağla, sonra Redeploy yap.</p></div>';
+                        content.innerHTML = '<div class="content-box empty-state"><p class="empty-title">Kayıt yok</p><p class="empty-hint">Henüz veri yok. Vercel’de Redis bağlı değilse bağlayıp Redeploy yap.</p></div>';
                         return;
                     }
                     var html = '<div class="content-box"><table><thead><tr><th>Tarih</th><th>Tip</th><th>IP</th><th>Discord</th><th>Tarayıcı</th></tr></thead><tbody>';
