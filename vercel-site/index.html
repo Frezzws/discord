@@ -446,6 +446,13 @@
             border-radius: 10px;
             background: var(--gray-4);
             border: 1px solid var(--border);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .modal-bot-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .modal-bot-name { font-weight: 700; font-size: 1rem; color: var(--white); }
         .modal-bot-meta { font-size: 0.8rem; color: var(--white-soft); margin-top: 0.15rem; }
@@ -588,11 +595,11 @@
             </div>
             <div class="how-wrap">
                 <button type="button" class="how-btn" id="how-btn" aria-expanded="false">
-                    Nasıl kullanılır
+                    Spam Botu nasıl kullanılır
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
                 <div class="how-content" id="how-content">
-                    <h3># Troll Botu Nasıl Kullanılır?</h3>
+                    <h3># Spam Botu Nasıl Kullanılır?</h3>
                     <ol>
                         <li>Botu öncelikle hesabına eklemen gerekiyor. <a href="https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands" target="_blank" rel="noopener">Eklemek İçin Tıkla</a></li>
                         <li>Ardından botun <span class="cmd">/</span> komutlarını kullanabilirsin: <span class="cmd">/mesaj</span>, <span class="cmd">/dosya</span>, mesaj vs.</li>
@@ -618,9 +625,11 @@
                 <div class="modal-bots">
                     <div class="modal-bot is-first">
                         <div class="modal-bot-info">
-                            <div class="modal-bot-avatar"></div>
+                            <div class="modal-bot-avatar">
+                                <img src="https://cdn.discordapp.com/icons/1432416601931644940/21909a0b9e148c209177a0a5323b2dbc.webp?size=128" alt="Spam V1.1" width="44" height="44">
+                            </div>
                             <div>
-                                <div class="modal-bot-name">Spam Botu v2</div>
+                                <div class="modal-bot-name">Spam V1.1</div>
                                 <div class="modal-bot-meta">Sunucuya ekle</div>
                             </div>
                         </div>
