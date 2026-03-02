@@ -165,9 +165,81 @@
         }
         .detail-close:hover { color: var(--white); border-color: var(--border-hover); }
         .ip-empty { color: var(--white-soft); font-size: 0.9rem; padding: 1.5rem; text-align: center; }
+        .key-gate {
+            position: relative;
+            z-index: 15;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .key-gate.hidden { display: none; }
+        .key-form-box {
+            background: var(--gray-2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+        }
+        .key-form-box h2 {
+            font-size: 1rem;
+            font-family: var(--font-mono);
+            color: var(--white-soft);
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.05em;
+        }
+        .key-form-box input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            font-size: 1rem;
+            font-family: var(--font-mono);
+            background: var(--gray-1);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+        .key-form-box input::placeholder { color: var(--white-soft); }
+        .key-form-box input:focus { outline: none; border-color: var(--border-hover); }
+        .key-form-box button {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            background: var(--white);
+            color: var(--black);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .key-form-box button:hover { opacity: 0.95; }
+        .key-form-box .key-err {
+            color: #f87171;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .key-form-box .key-err.show { display: block; }
+        .main-content { display: none; }
+        .main-content.visible { display: block; }
     </style>
 </head>
 <body>
+    <div class="key-gate" id="key-gate">
+        <div class="key-form-box">
+            <h2>Key girin</h2>
+            <form id="key-form">
+                <input type="text" id="key-input" placeholder="key" autocomplete="off" />
+                <button type="submit">Giriş</button>
+                <p class="key-err" id="key-err">Yanlış key.</p>
+            </form>
+        </div>
+    </div>
+    <div class="main-content" id="main-content">
     <div class="bg-wrap"></div>
     <div class="bg-grid"></div>
     <div class="key-wrap">
@@ -187,8 +259,36 @@
             <button type="button" class="detail-close" id="detail-close">Kapat</button>
         </div>
     </div>
+    </div>
     <script>
         (function() {
+            var KEY = 'key';
+            var STORAGE_KEY = 'log_key_ok';
+
+            var gate = document.getElementById('key-gate');
+            var mainContent = document.getElementById('main-content');
+            var keyForm = document.getElementById('key-form');
+            var keyInput = document.getElementById('key-input');
+            var keyErr = document.getElementById('key-err');
+
+            if (sessionStorage.getItem(STORAGE_KEY) === '1') {
+                gate.classList.add('hidden');
+                mainContent.classList.add('visible');
+            }
+
+            keyForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                keyErr.classList.remove('show');
+                var val = (keyInput.value || '').trim().toLowerCase();
+                if (val === KEY) {
+                    sessionStorage.setItem(STORAGE_KEY, '1');
+                    gate.classList.add('hidden');
+                    mainContent.classList.add('visible');
+                } else {
+                    keyErr.classList.add('show');
+                }
+            });
+
             var listEl = document.getElementById('ip-list');
             var emptyEl = document.getElementById('ip-empty');
             var overlay = document.getElementById('detail-overlay');
@@ -254,7 +354,7 @@
             }
             closeBtn.addEventListener('click', function() { overlay.classList.remove('is-open'); });
             overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.classList.remove('is-open'); });
-            loadVisits();
+            if (mainContent.classList.contains('visible')) loadVisits();
         })();
     </script>
     <script src="/protect.js"></script>

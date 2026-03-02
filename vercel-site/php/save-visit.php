@@ -1,20 +1,27 @@
 <?php
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
-$dir = __DIR__ . '/../data';
-if (!is_dir($dir)) mkdir($dir, 0755, true);
-$file = $dir . '/visits.json';
+header('Cache-Control: no-store');
 
-$ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['HTTP_X_REAL_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+$dir = __DIR__ . '/../data';
+if (!is_dir($dir) || !is_writable($dir)) {
+    $dir = __DIR__ . '/data';
+}
+if (!is_dir($dir)) @mkdir($dir, 0755, true);
+$file = rtrim($dir, '/') . '/visits.json';
+
+$ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : (isset($_SERVER['HTTP_X_REAL_IP']) ? $_SERVER['HTTP_X_REAL_IP'] : (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0'));
 if (strpos($ip, ',') !== false) $ip = trim(explode(',', $ip)[0]);
-$ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+$ua = isset($_SERVER['HTTP_USER_AGENT']) ? substr($_SERVER['HTTP_USER_AGENT'], 0, 500) : '';
 $time = date('c');
 
 $list = [];
-if (file_exists($file)) {
-    $list = json_decode(file_get_contents($file), true) ?: [];
+if (file_exists($file) && is_readable($file)) {
+    $raw = @file_get_contents($file);
+    if ($raw) $list = json_decode($raw, true);
+    if (!is_array($list)) $list = [];
 }
-$list[] = ['ip' => $ip, 'user_agent' => substr($ua, 0, 500), 'time' => $time];
-file_put_contents($file, json_encode($list, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-echo json_encode(['ok' => true]);
+$list[] = array('ip' => $ip, 'user_agent' => $ua, 'time' => $time);
+@file_put_contents($file, json_encode($list, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+echo json_encode(array('ok' => true));
 ?>
