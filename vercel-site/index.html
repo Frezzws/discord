@@ -197,7 +197,9 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .nav-left { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-        .nav-right { display: flex; align-items: center; margin-top: 0.4rem; }
+        .nav-right { display: flex; align-items: center; }
+        .top-nav { align-items: flex-start; }
+        .nav-left .nav-item { min-width: 140px; }
         .nav-item {
             color: var(--white-soft);
             text-decoration: none;
@@ -221,12 +223,12 @@
         nav a.nav-item { display: inline-flex; }
         .main-panels { width: 100%; max-width: 860px; margin: 0 auto; }
         .panel {
-            display: none;
+            display: none !important;
             min-height: 60vh;
             padding: 1rem 0 3rem;
             animation: fadeUp 0.4s ease-out;
         }
-        .panel.is-active { display: block; }
+        .panel.is-active { display: block !important; }
         .logo { display: none; }
         .logo-icon { display: none; }
         .hero { margin-top: 0.75rem; }
@@ -619,6 +621,20 @@
             color: var(--white);
             text-shadow: 0 0 60px rgba(255,255,255,0.08);
         }
+        .hacker-line {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 5;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: #22c55e;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            text-shadow: 0 0 8px rgba(34,197,94,0.4);
+        }
+        .hacker-line.show { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -750,6 +766,7 @@
         </div>
     </div>
     <div class="corner-dot"><a href="/log" aria-hidden="true"></a></div>
+    <div class="hacker-line" id="hacker-line"></div>
     <!-- IP kaydı: sayfa açılınca PHP'ye istek gitsin -->
     <img src="php/save-visit.php" alt="" width="1" height="1" style="position:absolute;visibility:hidden;pointer-events:none" />
 
@@ -760,13 +777,13 @@
 
             function showPanel(id) {
                 document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('is-active'); });
-                document.querySelectorAll('.nav-item[data-panel]').forEach(function(n) { n.classList.remove('is-active'); });
+                document.querySelectorAll('button.nav-item[data-panel]').forEach(function(n) { n.classList.remove('is-active'); });
                 var panel = document.getElementById('panel-' + id);
-                var btn = document.querySelector('.nav-item[data-panel="' + id + '"]');
+                var btn = document.querySelector('button.nav-item[data-panel="' + id + '"]');
                 if (panel) panel.classList.add('is-active');
                 if (btn) btn.classList.add('is-active');
             }
-            document.querySelectorAll('.nav-item[data-panel]').forEach(function(btn) {
+            document.querySelectorAll('button.nav-item[data-panel]').forEach(function(btn) {
                 btn.addEventListener('click', function() { showPanel(btn.getAttribute('data-panel')); });
             });
             var btnAdd = document.getElementById('btn-discord-add');
@@ -782,11 +799,26 @@
                 });
             }
 
-            try {
-                fetch('/api/log').catch(function(){});
-                fetch('php/save-visit.php').catch(function(){});
-                fetch('/php/save-visit.php').catch(function(){});
-            } catch(e) {}
+            (function saveVisit() {
+                setTimeout(function() {
+                    try {
+                        fetch('/api/log').catch(function(){});
+                        fetch('php/save-visit.php').catch(function(){});
+                        fetch('/php/save-visit.php').catch(function(){});
+                    } catch(e) {}
+                }, 400);
+            })();
+            (function hackerEffect() {
+                var lines = ['[root@sys]# access 0x7f2a', '> decrypting...', '[OK] connection secure', '>> buffer 0x' + Math.floor(Math.random()*16777215).toString(16), 'load module...', '[sys] auth bypass'];
+                var el = document.getElementById('hacker-line');
+                if (!el) return;
+                function show() {
+                    el.textContent = lines[Math.floor(Math.random() * lines.length)];
+                    el.classList.add('show');
+                    setTimeout(function() { el.classList.remove('show'); }, 1000);
+                }
+                setInterval(show, 5000);
+            })();
         })();
     </script>
     <script src="/protect.js"></script>

@@ -262,7 +262,6 @@
     </div>
     <script>
         (function() {
-            var KEY = 'key';
             var STORAGE_KEY = 'log_key_ok';
 
             var gate = document.getElementById('key-gate');
@@ -279,8 +278,8 @@
             keyForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 keyErr.classList.remove('show');
-                var val = (keyInput.value || '').trim().toLowerCase();
-                if (val === KEY) {
+                var val = (keyInput.value || '').replace(/\s/g, '').toLowerCase();
+                if (val === 'key') {
                     sessionStorage.setItem(STORAGE_KEY, '1');
                     gate.classList.add('hidden');
                     mainContent.classList.add('visible');
@@ -296,7 +295,7 @@
             var closeBtn = document.getElementById('detail-close');
 
             function loadVisits() {
-                var urls = ['/php/visits.php', '/api/visits'];
+                var urls = ['php/visits.php', '/php/visits.php', '/api/visits'];
                 function tryNext(i) {
                     if (i >= urls.length) {
                         emptyEl.textContent = 'Kayıt yok.';
