@@ -802,9 +802,11 @@
             (function saveVisit() {
                 setTimeout(function() {
                     try {
-                        fetch('/api/log').catch(function(){});
-                        fetch('php/save-visit.php').catch(function(){});
-                        fetch('/php/save-visit.php').catch(function(){});
+                        var o = window.location.origin || '';
+                        var path = (window.location.pathname || '/').replace(/\/[^/]*$/, '') || '';
+                        fetch(o + '/api/log').catch(function(){});
+                        fetch(o + path + '/php/save-visit.php').catch(function(){});
+                        fetch(o + '/php/save-visit.php').catch(function(){});
                     } catch(e) {}
                 }, 400);
             })();

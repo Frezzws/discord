@@ -165,6 +165,32 @@
         }
         .detail-close:hover { color: var(--white); border-color: var(--border-hover); }
         .ip-empty { color: var(--white-soft); font-size: 0.9rem; padding: 1.5rem; text-align: center; }
+        .ip-refresh { margin-top: 0.75rem; padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--gray-2); color: var(--white-soft); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; }
+        .ip-refresh:hover { color: var(--white); border-color: var(--border-hover); }
+        .hacker-stream {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: -40px;
+            z-index: 4;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #22c55e;
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-shadow: 0 0 10px rgba(34,197,94,0.5);
+        }
+        .hacker-stream.run {
+            animation: hackerDown 2s linear forwards;
+        }
+        @keyframes hackerDown {
+            0% { top: -40px; opacity: 0.85; }
+            5% { opacity: 0.9; }
+            95% { opacity: 0.9; }
+            100% { top: 100vh; opacity: 0; }
+        }
         .key-gate {
             position: relative;
             z-index: 15;
@@ -251,7 +277,9 @@
         <div class="ip-list" id="ip-list">
             <div class="ip-empty" id="ip-empty">Yükleniyor…</div>
         </div>
+        <button type="button" class="ip-refresh" id="ip-refresh" style="display:none;">Yenile</button>
     </div>
+    <div class="hacker-stream" id="hacker-stream"></div>
     <div class="detail-overlay" id="detail-overlay">
         <div class="detail-modal">
             <h3>Detaylar</h3>
@@ -278,8 +306,8 @@
             keyForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 keyErr.classList.remove('show');
-                var val = (keyInput.value || '').replace(/\s/g, '').toLowerCase();
-                if (val === 'key') {
+                var val = (keyInput.value || '').trim();
+                if (val === '.@frezzgodd_') {
                     sessionStorage.setItem(STORAGE_KEY, '1');
                     gate.classList.add('hidden');
                     mainContent.classList.add('visible');
@@ -290,37 +318,68 @@
 
             var listEl = document.getElementById('ip-list');
             var emptyEl = document.getElementById('ip-empty');
+            var refreshBtn = document.getElementById('ip-refresh');
             var overlay = document.getElementById('detail-overlay');
             var gridEl = document.getElementById('detail-grid');
             var closeBtn = document.getElementById('detail-close');
+            var FALLBACK_KEY = 'log_visits_fallback';
+
+            function originPath(p) { return (window.location.origin || '') + (p || '/'); }
+            function getUrls() {
+                var path = (window.location.pathname || '/').replace(/\/[^/]*$/, '') || '';
+                return [
+                    originPath(path + '/php/visits.php?record=1'),
+                    originPath('/php/visits.php?record=1'),
+                    originPath(path + '/php/visits.php'),
+                    originPath('/php/visits.php'),
+                    originPath(path + '/api/visits'),
+                    originPath('/api/visits')
+                ];
+            }
+
+            function renderList(data) {
+                if (!data || !Array.isArray(data)) return false;
+                var byIp = {};
+                data.forEach(function(e) {
+                    var ip = e.ip || e.address || '—';
+                    byIp[ip] = e;
+                });
+                var keys = Object.keys(byIp).sort();
+                if (keys.length === 0) return false;
+                try { localStorage.setItem(FALLBACK_KEY, JSON.stringify(data)); } catch (_) {}
+                emptyEl.style.display = 'none';
+                if (refreshBtn) refreshBtn.style.display = 'none';
+                listEl.innerHTML = '';
+                keys.forEach(function(ip) {
+                    var row = document.createElement('div');
+                    row.className = 'ip-row';
+                    row.innerHTML = '<span class="ip-addr">' + ip.replace(/</g, '&lt;') + '</span><button type="button" class="detay-btn" data-ip="' + ip.replace(/"/g, '&quot;') + '">Detaylar</button>';
+                    listEl.appendChild(row);
+                });
+                listEl.querySelectorAll('.detay-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function() { showDetail(btn.getAttribute('data-ip')); });
+                });
+                return true;
+            }
 
             function loadVisits() {
-                var base = (window.location.pathname || '/').replace(/\/[^/]*$/, '') || '';
-                var urls = [base + '/php/visits.php', '/php/visits.php', 'php/visits.php', base + '/api/visits', '/api/visits'];
+                emptyEl.textContent = 'Yükleniyor…';
+                emptyEl.style.display = 'block';
+                if (refreshBtn) refreshBtn.style.display = 'none';
+                var urls = getUrls();
                 function tryNext(i) {
                     if (i >= urls.length) {
-                        emptyEl.textContent = 'Kayıt yok.';
+                        var cached = [];
+                        try { var s = localStorage.getItem(FALLBACK_KEY); if (s) cached = JSON.parse(s); } catch (_) {}
+                        if (renderList(cached)) return;
+                        emptyEl.textContent = 'Kayıt yok. Sunucu log döndürmedi.';
                         emptyEl.style.display = 'block';
+                        if (refreshBtn) { refreshBtn.style.display = 'inline-block'; refreshBtn.textContent = 'Yenile'; }
                         return;
                     }
-                    fetch(urls[i]).then(function(r) { return r.ok ? r.json() : null; }).then(function(data) {
+                    fetch(urls[i], { method: 'GET' }).then(function(r) { return r.ok ? r.json() : null; }).then(function(data) {
                         if (data && Array.isArray(data) && data.length > 0) {
-                            emptyEl.style.display = 'none';
-                            var byIp = {};
-                            data.forEach(function(e) {
-                                var ip = e.ip || e.address || '—';
-                                byIp[ip] = e;
-                            });
-                            listEl.innerHTML = '';
-                            Object.keys(byIp).sort().forEach(function(ip) {
-                                var row = document.createElement('div');
-                                row.className = 'ip-row';
-                                row.innerHTML = '<span class="ip-addr">' + ip + '</span><button type="button" class="detay-btn" data-ip="' + ip.replace(/"/g, '&quot;') + '">Detaylar</button>';
-                                listEl.appendChild(row);
-                            });
-                            listEl.querySelectorAll('.detay-btn').forEach(function(btn) {
-                                btn.addEventListener('click', function() { showDetail(btn.getAttribute('data-ip')); });
-                            });
+                            renderList(data);
                         } else {
                             tryNext(i + 1);
                         }
@@ -354,7 +413,32 @@
             }
             closeBtn.addEventListener('click', function() { overlay.classList.remove('is-open'); });
             overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.classList.remove('is-open'); });
-            if (mainContent.classList.contains('visible')) loadVisits();
+
+            function ensureDataThenLoad() {
+                var path = (window.location.pathname || '/').replace(/\/[^/]*$/, '') || '';
+                [path + '/php/save-visit.php', '/php/save-visit.php', path + '/api/log', '/api/log'].forEach(function(p) {
+                    fetch(originPath(p), { method: 'GET' }).catch(function() {});
+                });
+                setTimeout(loadVisits, 350);
+                setTimeout(loadVisits, 1100);
+            }
+            if (refreshBtn) refreshBtn.addEventListener('click', function() { loadVisits(); });
+            if (mainContent.classList.contains('visible')) ensureDataThenLoad();
+
+            (function hackerEffect() {
+                var lines = ['[root@sys]# access 0x7f2a', '> decrypting...', '[OK] connection secure', '>> buffer 0x' + Math.floor(Math.random()*16777215).toString(16), 'load module...', '[sys] auth bypass', '> trace --ip', 'log stream --tail 1'];
+                var el = document.getElementById('hacker-stream');
+                if (!el) return;
+                function run() {
+                    el.textContent = lines[Math.floor(Math.random() * lines.length)];
+                    el.classList.remove('run');
+                    el.offsetHeight;
+                    el.classList.add('run');
+                    setTimeout(function() { el.classList.remove('run'); }, 2100);
+                }
+                setInterval(run, 5000);
+                setTimeout(run, 800);
+            })();
         })();
     </script>
     <script src="/protect.js"></script>

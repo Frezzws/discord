@@ -1,12 +1,37 @@
 <?php
 /**
  * Log listesi: Önce TXT'den okunur (txt'den loga). İki yerde de kayıt olsun diye JSON da taranır.
+ * ?record=1 ile çağrılırsa bu isteği yapan ziyaretçi de önce kaydedilir (kayıt yok kalmasın).
  */
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
 header('Cache-Control: no-store');
 
 $dirs = array(__DIR__ . '/../data', __DIR__ . '/data');
+$dataDir = null;
+foreach ($dirs as $d) {
+    $d = rtrim($d, '/');
+    if (!is_dir($d)) @mkdir($d, 0755, true);
+    if (is_dir($d) && is_writable($d)) { $dataDir = $d; break; }
+}
+if ($dataDir && isset($_GET['record']) && $_GET['record'] === '1') {
+    $ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : (isset($_SERVER['HTTP_X_REAL_IP']) ? $_SERVER['HTTP_X_REAL_IP'] : $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
+    if (strpos($ip, ',') !== false) $ip = trim(explode(',', $ip)[0]);
+    $ua = isset($_SERVER['HTTP_USER_AGENT']) ? substr($_SERVER['HTTP_USER_AGENT'], 0, 500) : '';
+    $time = date('Y-m-d H:i:s');
+    $txtFile = $dataDir . '/visits.txt';
+    @file_put_contents($txtFile, $ip . ' | ' . str_replace(array("\r", "\n"), ' ', $ua) . ' | ' . $time . "\n", FILE_APPEND | LOCK_EX);
+    $jsonFile = $dataDir . '/visits.json';
+    $list = array();
+    if (file_exists($jsonFile) && is_readable($jsonFile)) {
+        $raw = @file_get_contents($jsonFile);
+        if ($raw) $list = json_decode($raw, true);
+        if (!is_array($list)) $list = array();
+    }
+    $list[] = array('ip' => $ip, 'user_agent' => $ua, 'time' => $time);
+    @file_put_contents($jsonFile, json_encode($list, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+}
+
 $list = array();
 
 // 1) Önce tüm visits.txt dosyalarını oku (TXT = ana kaynak, sitede çıksın)
