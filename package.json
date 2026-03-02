@@ -1,8 +1,0 @@
-{
-  "name": "bot-invite-site",
-  "private": true,
-  "dependencies": {
-    "@upstash/redis": "^1.34.0",
-    "redis": "^5.11.0"
-  }
-}
