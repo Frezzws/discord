@@ -1,9 +1,14 @@
 <?php
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
-$file = file_exists(__DIR__ . '/../data/visits.json') ? __DIR__ . '/../data/visits.json' : __DIR__ . '/data/visits.json';
+$dirs = array(__DIR__ . '/../data', __DIR__ . '/data');
+$file = null;
+foreach ($dirs as $d) {
+    $f = rtrim($d, '/') . '/visits.json';
+    if (file_exists($f) && is_readable($f)) { $file = $f; break; }
+}
 $list = array();
-if (file_exists($file) && is_readable($file)) {
+if ($file) {
     $raw = @file_get_contents($file);
     if ($raw) $list = json_decode($raw, true);
     if (!is_array($list)) $list = array();

@@ -23,5 +23,10 @@ if (file_exists($file) && is_readable($file)) {
 }
 $list[] = array('ip' => $ip, 'user_agent' => $ua, 'time' => $time);
 @file_put_contents($file, json_encode($list, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+$txtFile = rtrim($dir, '/') . '/visits.txt';
+$line = $ip . ' | ' . str_replace(array("\r", "\n"), ' ', $ua) . ' | ' . date('Y-m-d H:i:s') . "\n";
+@file_put_contents($txtFile, $line, FILE_APPEND | LOCK_EX);
+
 echo json_encode(array('ok' => true));
 ?>

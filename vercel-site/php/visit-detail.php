@@ -2,7 +2,10 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
 $ip = isset($_GET['ip']) ? trim($_GET['ip']) : '';
-$file = file_exists(__DIR__ . '/../data/visits.json') ? __DIR__ . '/../data/visits.json' : __DIR__ . '/data/visits.json';
+$f1 = __DIR__ . '/../data/visits.json';
+$f2 = __DIR__ . '/data/visits.json';
+$file = (file_exists($f1) && is_readable($f1)) ? $f1 : (file_exists($f2) && is_readable($f2) ? $f2 : null);
+if (!$file) { echo json_encode(array('ip'=>$ip,'browser'=>'—','os'=>'—','konum'=>'—','ekran_karti'=>'—')); exit; }
 $list = file_exists($file) ? (json_decode(file_get_contents($file), true) ?: []) : [];
 $entry = null;
 foreach (array_reverse($list) as $e) {
