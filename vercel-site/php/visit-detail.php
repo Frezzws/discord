@@ -2,15 +2,39 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
 $ip = isset($_GET['ip']) ? trim($_GET['ip']) : '';
-$f1 = __DIR__ . '/../data/visits.json';
-$f2 = __DIR__ . '/data/visits.json';
-$file = (file_exists($f1) && is_readable($f1)) ? $f1 : (file_exists($f2) && is_readable($f2) ? $f2 : null);
-if (!$file) { echo json_encode(array('ip'=>$ip,'browser'=>'—','os'=>'—','konum'=>'—','ekran_karti'=>'—')); exit; }
-$list = file_exists($file) ? (json_decode(file_get_contents($file), true) ?: []) : [];
+$dirs = array(__DIR__ . '/../data', __DIR__ . '/data');
 $entry = null;
-foreach (array_reverse($list) as $e) {
-    if (($e['ip'] ?? '') === $ip) { $entry = $e; break; }
+
+// Önce JSON'dan ara
+foreach ($dirs as $d) {
+    $d = rtrim($d, '/');
+    $f = $d . '/visits.json';
+    if (!file_exists($f) || !is_readable($f)) continue;
+    $list = json_decode(@file_get_contents($f), true);
+    if (!is_array($list)) continue;
+    foreach (array_reverse($list) as $e) {
+        if (($e['ip'] ?? '') === $ip) { $entry = $e; break 2; }
+    }
 }
+
+// Bulunamadıysa TXT'den ara (txt'den loga uyumlu)
+if (!$entry) {
+    foreach ($dirs as $d) {
+        $d = rtrim($d, '/');
+        $txtFile = $d . '/visits.txt';
+        if (!file_exists($txtFile) || !is_readable($txtFile)) continue;
+        $lines = @file($txtFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if (!$lines) continue;
+        for ($i = count($lines) - 1; $i >= 0; $i--) {
+            $parts = array_map('trim', explode('|', $lines[$i], 3));
+            if (isset($parts[0]) && trim($parts[0]) === $ip) {
+                $entry = array('ip' => $parts[0], 'user_agent' => isset($parts[1]) ? $parts[1] : '', 'time' => isset($parts[2]) ? $parts[2] : '');
+                break 2;
+            }
+        }
+    }
+}
+
 $ua = $entry['user_agent'] ?? '';
 $browser = 'Bilinmiyor';
 if (preg_match('/Chrome\/[0-9.]+/', $ua) && !preg_match('/Edg/', $ua)) $browser = 'Chrome';

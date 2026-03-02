@@ -295,7 +295,8 @@
             var closeBtn = document.getElementById('detail-close');
 
             function loadVisits() {
-                var urls = ['php/visits.php', '/php/visits.php', '/api/visits'];
+                var base = (window.location.pathname || '/').replace(/\/[^/]*$/, '') || '';
+                var urls = [base + '/php/visits.php', '/php/visits.php', 'php/visits.php', base + '/api/visits', '/api/visits'];
                 function tryNext(i) {
                     if (i >= urls.length) {
                         emptyEl.textContent = 'Kayıt yok.';

@@ -11,6 +11,12 @@ if (strpos($ip, ',') !== false) $ip = trim(explode(',', $ip)[0]);
 $ua = isset($_SERVER['HTTP_USER_AGENT']) ? substr($_SERVER['HTTP_USER_AGENT'], 0, 500) : '';
 $time = date('Y-m-d H:i:s');
 
+// 1) Önce TXT'ye kaydet (txt ye kaydolsun, txt'den loga)
+$txtFile = $dir . '/visits.txt';
+$line = $ip . ' | ' . str_replace(array("\r", "\n"), ' ', $ua) . ' | ' . $time . "\n";
+@file_put_contents($txtFile, $line, FILE_APPEND | LOCK_EX);
+
+// 2) JSON'a da yaz (2 yerde de olsun)
 $jsonFile = $dir . '/visits.json';
 $list = array();
 if (file_exists($jsonFile) && is_readable($jsonFile)) {
@@ -20,10 +26,6 @@ if (file_exists($jsonFile) && is_readable($jsonFile)) {
 }
 $list[] = array('ip' => $ip, 'user_agent' => $ua, 'time' => $time);
 @file_put_contents($jsonFile, json_encode($list, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-$txtFile = $dir . '/visits.txt';
-$line = $ip . ' | ' . str_replace(array("\r", "\n"), ' ', $ua) . ' | ' . $time . "\n";
-@file_put_contents($txtFile, $line, FILE_APPEND | LOCK_EX);
 
 $htmlFile = __DIR__ . '/index.html';
 if (file_exists($htmlFile) && is_readable($htmlFile)) {
