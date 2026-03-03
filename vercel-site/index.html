@@ -39,6 +39,13 @@
             z-index: 0;
             background: var(--black);
         }
+        .bg-matrix {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            opacity: 0.18;
+            pointer-events: none;
+        }
         .bg-orb {
             position: absolute;
             border-radius: 50%;
@@ -644,6 +651,7 @@
         <div class="bg-orb bg-orb-3"></div>
         <div class="bg-orb bg-orb-4"></div>
     </div>
+    <canvas class="bg-matrix" id="bg-matrix"></canvas>
     <div class="bg-grid"></div>
     <div class="bg-grid-2"></div>
     <div class="bg-sweep"></div>
@@ -717,45 +725,13 @@
                     <span class="modal-header-title">BOTLAR</span>
                     <span class="modal-header-dev">@frezzgodd_</span>
                 </div>
-                <div class="modal-bots" style="padding: 0.5rem 0;">
-                    <div class="modal-bot is-first">
-                        <div class="modal-bot-info">
-                            <div class="modal-bot-avatar">
-                                <img src="https://cdn.discordapp.com/icons/1432416601931644940/21909a0b9e148c209177a0a5323b2dbc.webp?size=128" alt="Spam V1.1" width="44" height="44">
-                            </div>
-                            <div>
-                                <div class="modal-bot-name">Spam V1.1</div>
-                                <div class="modal-bot-meta">Sunucuya ekle</div>
-                            </div>
-                        </div>
-                        <a href="https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands" id="panel-invite-link" class="modal-bot-add" target="_blank" rel="noopener">Ekle</a>
-                    </div>
-                </div>
-                <div class="modal-how" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
-                    <button type="button" class="modal-how-btn" id="panel-how-btn" aria-expanded="false" style="width: 100%;">
-                        Spam Botu (Spam V1.1) nasıl kullanılır
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    </button>
-                    <div class="modal-how-content" id="panel-how-content">
-                        <h3># Spam Botu (Spam V1.1) Nasıl Kullanılır?</h3>
-                        <ol>
-                            <li>Botu öncelikle hesabına eklemen gerekiyor. <a href="https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands" target="_blank" rel="noopener">Eklemek İçin Tıkla</a></li>
-                            <li>Ardından botun <span class="cmd">/</span> komutlarını kullanabilirsin: <span class="cmd">/mesaj</span>, <span class="cmd">/dosya</span>, mesaj vs.</li>
-                        </ol>
-                    </div>
-                </div>
+                <div class="modal-bots" id="panel-bots-list" style="padding: 0.5rem 0;"></div>
+                <div class="modal-how-wrap" id="panel-how-wrap" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);"></div>
             </div>
         </section>
 
         <section class="panel" id="panel-how">
-            <div class="panel-inner how-content is-open" style="max-width: 560px; margin: 0 auto; padding: 1.5rem 1.75rem; background: var(--gray-1); border: 1px solid var(--border); border-radius: 14px; text-align: left;">
-                <h3># Spam Botu (Spam V1.1) Nasıl Kullanılır?</h3>
-                <p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Bu bölüm <strong style="color: var(--white);">Spam V1.1</strong> botu içindir.</p>
-                <ol style="padding-left: 1.25rem; color: var(--white-soft); font-size: 0.95rem; line-height: 1.8;">
-                    <li>Botu öncelikle hesabına eklemen gerekiyor. <a href="https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands" target="_blank" rel="noopener" style="color: var(--white); text-decoration: underline;">Eklemek İçin Tıkla</a></li>
-                    <li>Ardından botun <span class="cmd">/</span> komutlarını kullanabilirsin: <span class="cmd">/mesaj</span>, <span class="cmd">/dosya</span>, mesaj vs.</li>
-                </ol>
-            </div>
+            <div class="panel-inner how-content is-open" id="panel-how-inner" style="max-width: 560px; margin: 0 auto; padding: 1.5rem 1.75rem; background: var(--gray-1); border: 1px solid var(--border); border-radius: 14px; text-align: left;"></div>
         </section>
 
         <section class="panel" id="panel-tool">
@@ -772,8 +748,81 @@
 
     <script>
         (function() {
-            var inviteUrl = 'https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands';
-            fetch('/api/invite-url').then(function(r){ return r.ok ? r.json() : null; }).then(function(d){ if (d && d.url) inviteUrl = d.url; var L = document.getElementById('panel-invite-link'); if (L) L.href = inviteUrl; }).catch(function(){});
+            var BOTS_KEY = 'site_bots';
+            var DEFAULT_BOTS = [{
+                id: 'default',
+                name: 'Spam V1.1',
+                inviteUrl: 'https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands',
+                avatar: 'https://cdn.discordapp.com/icons/1432416601931644940/21909a0b9e148c209177a0a5323b2dbc.webp?size=128',
+                description: 'Sunucuya ekle',
+                howToUse: '1. Botu öncelikle hesabına eklemen gerekiyor.\n2. Ardından botun / komutlarını kullanabilirsin: /mesaj, /dosya, mesaj vs.'
+            }];
+            function getBots() {
+                try {
+                    var s = localStorage.getItem(BOTS_KEY);
+                    if (s) { var a = JSON.parse(s); if (a && a.length) return a; }
+                } catch (_) {}
+                return DEFAULT_BOTS.slice();
+            }
+            function howToHtml(howToUse, inviteUrl) {
+                if (!howToUse || !howToUse.trim()) return '<p style="color: var(--white-soft);">Açıklama eklenmedi.</p>';
+                var parts = howToUse.trim().split(/\n+/);
+                var html = '';
+                parts.forEach(function(p) {
+                    p = p.trim();
+                    if (!p) return;
+                    if (/^\d+[.)]\s*/.test(p)) html += '<li>' + p.replace(/^\d+[.)]\s*/, '') + '</li>';
+                    else html += '<p style="color: var(--white-soft); font-size: 0.95rem; line-height: 1.7; margin-bottom: 0.5rem;">' + p + '</p>';
+                });
+                if (html && html.indexOf('<li>') === 0) html = '<ol style="padding-left: 1.25rem; color: var(--white-soft); font-size: 0.95rem; line-height: 1.8;">' + html + '</ol>';
+                if (inviteUrl) html = '<p style="margin-bottom: 0.75rem;"><a href="' + inviteUrl + '" target="_blank" rel="noopener" style="color: var(--white); text-decoration: underline;">Eklemek İçin Tıkla</a></p>' + html;
+                return html;
+            }
+            function renderBotsPanel() {
+                var bots = getBots();
+                var listEl = document.getElementById('panel-bots-list');
+                var wrapEl = document.getElementById('panel-how-wrap');
+                var howInner = document.getElementById('panel-how-inner');
+                if (!listEl) return;
+                listEl.innerHTML = '';
+                bots.forEach(function(b, i) {
+                    var div = document.createElement('div');
+                    div.className = 'modal-bot' + (i === 0 ? ' is-first' : '');
+                    var avatarUrl = (b.avatar && b.avatar.trim()) ? b.avatar.trim() : 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    div.innerHTML = '<div class="modal-bot-info"><div class="modal-bot-avatar"><img src="' + avatarUrl.replace(/"/g, '&quot;') + '" alt="' + (b.name || 'Bot').replace(/"/g, '&quot;') + '" width="44" height="44"></div><div><div class="modal-bot-name">' + (b.name || 'Bot').replace(/</g, '&lt;') + '</div><div class="modal-bot-meta">' + (b.description || 'Sunucuya ekle').replace(/</g, '&lt;') + '</div></div></div><a href="' + (b.inviteUrl || '#').replace(/"/g, '&quot;') + '" class="modal-bot-add" target="_blank" rel="noopener">Ekle</a>';
+                    listEl.appendChild(div);
+                });
+                if (wrapEl) {
+                    wrapEl.innerHTML = '';
+                    bots.forEach(function(b) {
+                        var name = b.name || 'Bot';
+                        var wrap = document.createElement('div');
+                        wrap.className = 'modal-how';
+                        var btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'modal-how-btn';
+                        btn.setAttribute('aria-expanded', 'false');
+                        btn.style.cssText = 'width: 100%;';
+                        btn.innerHTML = name.replace(/</g, '&lt;') + ' nasıl kullanılır <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+                        var content = document.createElement('div');
+                        content.className = 'modal-how-content';
+                        content.innerHTML = '<h3># ' + name.replace(/</g, '&lt;') + ' Nasıl Kullanılır?</h3>' + howToHtml(b.howToUse, b.inviteUrl);
+                        wrap.appendChild(btn);
+                        wrap.appendChild(content);
+                        wrapEl.appendChild(wrap);
+                        btn.addEventListener('click', function() {
+                            var open = content.classList.toggle('is-open');
+                            btn.classList.toggle('is-open', open);
+                            btn.setAttribute('aria-expanded', open);
+                        });
+                    });
+                }
+                if (howInner && bots.length > 0) {
+                    var first = bots[0];
+                    howInner.innerHTML = '<h3># ' + (first.name || 'Bot').replace(/</g, '&lt;') + ' Nasıl Kullanılır?</h3><p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Bu bölüm <strong style="color: var(--white);">' + (first.name || 'Bot').replace(/</g, '&lt;') + '</strong> botu içindir.</p>' + howToHtml(first.howToUse, first.inviteUrl);
+                }
+            }
+            renderBotsPanel();
 
             function showPanel(id) {
                 document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('is-active'); });
@@ -788,16 +837,6 @@
             });
             var btnAdd = document.getElementById('btn-discord-add');
             if (btnAdd && btnAdd.getAttribute('data-panel')) btnAdd.addEventListener('click', function() { showPanel('bots'); });
-
-            var panelHowBtn = document.getElementById('panel-how-btn');
-            var panelHowContent = document.getElementById('panel-how-content');
-            if (panelHowBtn && panelHowContent) {
-                panelHowBtn.addEventListener('click', function() {
-                    var open = panelHowContent.classList.toggle('is-open');
-                    panelHowBtn.classList.toggle('is-open', open);
-                    panelHowBtn.setAttribute('aria-expanded', open);
-                });
-            }
 
             (function saveVisit() {
                 setTimeout(function() {
@@ -820,6 +859,42 @@
                     setTimeout(function() { el.classList.remove('show'); }, 1000);
                 }
                 setInterval(show, 5000);
+            })();
+            (function matrixRain() {
+                var canvas = document.getElementById('bg-matrix');
+                if (!canvas) return;
+                var ctx = canvas.getContext('2d');
+                var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+                var colW = 20;
+                var drops = [];
+                function resize() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    var colCount = Math.max(8, Math.floor(canvas.width / colW));
+                    drops = [];
+                    for (var i = 0; i < colCount; i++) drops[i] = Math.random() * canvas.height / 20;
+                }
+                function draw() {
+                    ctx.fillStyle = 'rgba(3,3,3,0.05)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.font = '14px JetBrains Mono, monospace';
+                    var colCount = drops.length;
+                    for (var i = 0; i < colCount; i++) {
+                        var x = i * colW + colW * 0.3;
+                        ctx.fillStyle = 'rgba(34,197,94,0.8)';
+                        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, drops[i] * 20);
+                        for (var j = 0; j < 8; j++) {
+                            ctx.fillStyle = 'rgba(34,197,94,' + (0.3 - j * 0.035) + ')';
+                            ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, (drops[i] - j) * 20);
+                        }
+                        drops[i] += 0.35;
+                        if (drops[i] * 20 > canvas.height + 20) drops[i] = 0;
+                    }
+                }
+                function loop() { draw(); requestAnimationFrame(loop); }
+                resize();
+                window.addEventListener('resize', resize);
+                loop();
             })();
         })();
     </script>

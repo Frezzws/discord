@@ -29,6 +29,11 @@
             padding: 2rem 1.5rem 3rem;
         }
         .bg-wrap { position: fixed; inset: 0; z-index: 0; background: var(--black); }
+        .bg-matrix {
+            position: fixed; inset: 0; z-index: 0;
+            opacity: 0.22;
+            pointer-events: none;
+        }
         .bg-grid {
             position: fixed; inset: 0; z-index: 1;
             background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
@@ -252,6 +257,28 @@
         .key-form-box .key-err.show { display: block; }
         .main-content { display: none; }
         .main-content.visible { display: block; }
+        .admin-nav { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem; position: relative; z-index: 10; }
+        .admin-nav-btn { padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--gray-2); color: var(--white-soft); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; }
+        .admin-nav-btn:hover { color: var(--white); border-color: var(--border-hover); }
+        .admin-nav-btn.is-active { background: var(--gray-1); color: var(--white); border-color: var(--border-hover); }
+        .admin-panel { display: none; max-width: 560px; margin: 0 auto; position: relative; z-index: 10; }
+        .admin-panel.is-active { display: block; }
+        .cp-form { background: var(--gray-2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .cp-form h3 { font-size: 0.8rem; font-family: var(--font-mono); color: var(--white-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; }
+        .cp-form label { display: block; font-size: 0.8rem; color: var(--white-soft); margin-bottom: 0.35rem; }
+        .cp-form input, .cp-form textarea { width: 100%; padding: 0.65rem 0.9rem; font-size: 0.9rem; background: var(--gray-1); border: 1px solid var(--border); border-radius: 8px; color: var(--white); margin-bottom: 0.9rem; font-family: inherit; }
+        .cp-form textarea { min-height: 80px; resize: vertical; }
+        .cp-form input:focus, .cp-form textarea:focus { outline: none; border-color: var(--border-hover); }
+        .cp-form button { padding: 0.6rem 1.2rem; font-size: 0.9rem; font-weight: 600; background: var(--white); color: var(--black); border: none; border-radius: 8px; cursor: pointer; font-family: inherit; }
+        .cp-form button:hover { opacity: 0.95; }
+        .cp-bot-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .cp-bot-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1rem; background: var(--gray-2); border: 1px solid var(--border); border-radius: 12px; }
+        .cp-bot-item span { font-family: var(--font-mono); font-size: 0.9rem; color: var(--white); }
+        .cp-bot-actions { display: flex; gap: 0.5rem; }
+        .cp-bot-actions button { padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--gray-1); color: var(--white-soft); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-family: inherit; }
+        .cp-bot-actions button:hover { color: var(--white); border-color: var(--border-hover); }
+        .cp-bot-actions button.del { color: #f87171; }
+        .cp-bot-actions button.del:hover { border-color: #f87171; }
     </style>
 </head>
 <body>
@@ -267,17 +294,46 @@
     </div>
     <div class="main-content" id="main-content">
     <div class="bg-wrap"></div>
+    <canvas class="bg-matrix" id="bg-matrix"></canvas>
     <div class="bg-grid"></div>
     <div class="key-wrap">
         <h1 class="key-text">X</h1>
         <a href="/" class="back">← Geri</a>
     </div>
-    <div class="ip-section">
-        <h2>Ziyaretçi IP'leri</h2>
-        <div class="ip-list" id="ip-list">
-            <div class="ip-empty" id="ip-empty">Yükleniyor…</div>
+    <nav class="admin-nav">
+        <button type="button" class="admin-nav-btn is-active" data-tab="log">Log (IP'ler)</button>
+        <button type="button" class="admin-nav-btn" data-tab="panel">Kontrol Paneli</button>
+    </nav>
+    <div class="admin-panel is-active" id="tab-log">
+        <div class="ip-section">
+            <h2>Ziyaretçi IP'leri</h2>
+            <div class="ip-list" id="ip-list">
+                <div class="ip-empty" id="ip-empty">Yükleniyor…</div>
+            </div>
+            <button type="button" class="ip-refresh" id="ip-refresh" style="display:none;">Yenile</button>
         </div>
-        <button type="button" class="ip-refresh" id="ip-refresh" style="display:none;">Yenile</button>
+    </div>
+    <div class="admin-panel" id="tab-panel">
+        <div class="cp-form">
+            <h3>Bot Ekle</h3>
+            <form id="cp-bot-form">
+                <label>Bot adı</label>
+                <input type="text" id="cp-bot-name" placeholder="Örn: Spam V1.1" required />
+                <label>Bot davet linki</label>
+                <input type="url" id="cp-bot-link" placeholder="https://discord.com/oauth2/authorize?..." required />
+                <label>Bot avatar URL (isteğe bağlı)</label>
+                <input type="url" id="cp-bot-avatar" placeholder="https://cdn.discordapp.com/..." />
+                <label>Bot açıklaması</label>
+                <input type="text" id="cp-bot-desc" placeholder="Örn: Sunucuya ekle" />
+                <label>Nasıl kullanılır (madde madde yazabilirsin)</label>
+                <textarea id="cp-bot-how" placeholder="1. Botu hesabına ekle&#10;2. /mesaj, /dosya komutlarını kullan"></textarea>
+                <button type="submit">Bot Ekle</button>
+            </form>
+        </div>
+        <div class="ip-section">
+            <h2>Eklenen botlar</h2>
+            <div class="cp-bot-list" id="cp-bot-list"></div>
+        </div>
     </div>
     <div class="hacker-stream" id="hacker-stream"></div>
     <div class="detail-overlay" id="detail-overlay">
@@ -425,6 +481,93 @@
             if (refreshBtn) refreshBtn.addEventListener('click', function() { loadVisits(); });
             if (mainContent.classList.contains('visible')) ensureDataThenLoad();
 
+            var BOTS_KEY = 'site_bots';
+            function getBots() {
+                try {
+                    var s = localStorage.getItem(BOTS_KEY);
+                    return s ? JSON.parse(s) : [];
+                } catch (_) { return []; }
+            }
+            function saveBots(list) {
+                try { localStorage.setItem(BOTS_KEY, JSON.stringify(list)); } catch (_) {}
+            }
+            document.querySelectorAll('.admin-nav-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var t = btn.getAttribute('data-tab');
+                    document.querySelectorAll('.admin-nav-btn').forEach(function(b) { b.classList.remove('is-active'); });
+                    document.querySelectorAll('.admin-panel').forEach(function(p) { p.classList.remove('is-active'); });
+                    btn.classList.add('is-active');
+                    var panel = document.getElementById('tab-' + t);
+                    if (panel) panel.classList.add('is-active');
+                    if (t === 'panel') renderCpBotList();
+                });
+            });
+            var cpForm = document.getElementById('cp-bot-form');
+            var cpList = document.getElementById('cp-bot-list');
+            var editingId = null;
+            function renderCpBotList() {
+                var bots = getBots();
+                cpList.innerHTML = '';
+                bots.forEach(function(b) {
+                    var div = document.createElement('div');
+                    div.className = 'cp-bot-item';
+                    div.innerHTML = '<span>' + (b.name || 'Bot') + '</span><div class="cp-bot-actions"><button type="button" class="edit" data-id="' + b.id + '">Düzenle</button><button type="button" class="del" data-id="' + b.id + '">Sil</button></div>';
+                    cpList.appendChild(div);
+                });
+                cpList.querySelectorAll('button.edit').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var id = btn.getAttribute('data-id');
+                        var bots = getBots();
+                        var b = bots.find(function(x) { return x.id === id; });
+                        if (!b) return;
+                        editingId = id;
+                        document.getElementById('cp-bot-name').value = b.name || '';
+                        document.getElementById('cp-bot-link').value = b.inviteUrl || '';
+                        document.getElementById('cp-bot-avatar').value = b.avatar || '';
+                        document.getElementById('cp-bot-desc').value = b.description || '';
+                        document.getElementById('cp-bot-how').value = b.howToUse || '';
+                        cpForm.querySelector('button[type="submit"]').textContent = 'Güncelle';
+                    });
+                });
+                cpList.querySelectorAll('button.del').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var id = btn.getAttribute('data-id');
+                        if (!confirm('Bu botu silmek istediğine emin misin?')) return;
+                        var bots = getBots().filter(function(x) { return x.id !== id; });
+                        saveBots(bots);
+                        renderCpBotList();
+                        if (editingId === id) { editingId = null; cpForm.reset(); cpForm.querySelector('button[type="submit"]').textContent = 'Bot Ekle'; }
+                    });
+                });
+            }
+            if (cpForm) {
+                cpForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var name = (document.getElementById('cp-bot-name').value || '').trim();
+                    var inviteUrl = (document.getElementById('cp-bot-link').value || '').trim();
+                    var avatar = (document.getElementById('cp-bot-avatar').value || '').trim();
+                    var description = (document.getElementById('cp-bot-desc').value || '').trim();
+                    var howToUse = (document.getElementById('cp-bot-how').value || '').trim();
+                    var bots = getBots();
+                    if (editingId) {
+                        var idx = bots.findIndex(function(x) { return x.id === editingId; });
+                        if (idx >= 0) {
+                            bots[idx] = { id: editingId, name: name, inviteUrl: inviteUrl, avatar: avatar, description: description, howToUse: howToUse };
+                            saveBots(bots);
+                        }
+                        editingId = null;
+                        cpForm.querySelector('button[type="submit"]').textContent = 'Bot Ekle';
+                    } else {
+                        var id = 'bot_' + Date.now();
+                        bots.push({ id: id, name: name, inviteUrl: inviteUrl, avatar: avatar, description: description, howToUse: howToUse });
+                        saveBots(bots);
+                    }
+                    cpForm.reset();
+                    renderCpBotList();
+                });
+            }
+            if (mainContent.classList.contains('visible')) renderCpBotList();
+
             (function hackerEffect() {
                 var lines = ['[root@sys]# access 0x7f2a', '> decrypting...', '[OK] connection secure', '>> buffer 0x' + Math.floor(Math.random()*16777215).toString(16), 'load module...', '[sys] auth bypass', '> trace --ip', 'log stream --tail 1'];
                 var el = document.getElementById('hacker-stream');
@@ -438,6 +581,43 @@
                 }
                 setInterval(run, 5000);
                 setTimeout(run, 800);
+            })();
+
+            (function matrixRain() {
+                var canvas = document.getElementById('bg-matrix');
+                if (!canvas) return;
+                var ctx = canvas.getContext('2d');
+                var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+                var colCount = 14;
+                var colW = 18;
+                var drops = [];
+                function resize() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    colCount = Math.max(10, Math.floor(canvas.width / colW));
+                    drops = [];
+                    for (var i = 0; i < colCount; i++) drops[i] = Math.random() * canvas.height / 20;
+                }
+                function draw() {
+                    ctx.fillStyle = 'rgba(3,3,3,0.06)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.font = '14px JetBrains Mono, monospace';
+                    for (var i = 0; i < colCount; i++) {
+                    var x = i * colW + colW * 0.3;
+                    ctx.fillStyle = 'rgba(34,197,94,0.85)';
+                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, drops[i] * 20);
+                    for (var j = 0; j < 8; j++) {
+                        ctx.fillStyle = 'rgba(34,197,94,' + (0.35 - j * 0.04) + ')';
+                        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, (drops[i] - j) * 20);
+                    }
+                    drops[i] += 0.4;
+                    if (drops[i] * 20 > canvas.height + 20) drops[i] = 0;
+                    }
+                }
+                function loop() { draw(); requestAnimationFrame(loop); }
+                resize();
+                window.addEventListener('resize', resize);
+                loop();
             })();
         })();
     </script>
