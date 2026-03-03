@@ -21,7 +21,6 @@
     document.addEventListener('dragstart', stop, true);
     document.addEventListener('copy', stop, true);
     document.addEventListener('cut', stop, true);
-    document.addEventListener('paste', stop, true);
     try {
         document.body.style.webkitUserSelect = 'none';
         document.body.style.userSelect = 'none';

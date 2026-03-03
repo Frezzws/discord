@@ -28,11 +28,31 @@
             background: var(--black);
             padding: 2rem 1.5rem 3rem;
         }
-        .bg-wrap { position: fixed; inset: 0; z-index: 0; background: var(--black); }
+        .bg-wrap {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: radial-gradient(ellipse 100% 80% at 50% 0%, rgba(18,18,24,0.98) 0%, #050505 45%),
+                        radial-gradient(ellipse 70% 50% at 50% 100%, rgba(22,22,30,0.5) 0%, transparent 55%),
+                        #030303;
+        }
         .bg-grid {
-            position: fixed; inset: 0; z-index: 1;
-            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 72px 72px;
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+            background-size: 64px 64px;
+            mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, black 10%, transparent 55%);
+            -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, black 10%, transparent 55%);
+        }
+        .bg-log-glow {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: radial-gradient(ellipse 60% 40% at 50% 20%, rgba(255,255,255,0.03) 0%, transparent 50%);
+            pointer-events: none;
         }
         .key-wrap {
             position: relative;
@@ -295,6 +315,7 @@
     </div>
     <div class="main-content" id="main-content">
     <div class="bg-wrap"></div>
+    <div class="bg-log-glow"></div>
     <div class="bg-grid"></div>
     <div class="key-wrap">
         <h1 class="key-text">X</h1>
