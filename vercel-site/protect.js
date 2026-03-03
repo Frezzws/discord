@@ -1,22 +1,27 @@
 (function() {
     'use strict';
+    function stop(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        if (e && e.stopPropagation) e.stopPropagation();
+        return false;
+    }
     var k = function(e) {
-        var key = e.key || e.keyCode;
-        if (key === 'F12' || key === 123) { e.preventDefault(); return false; }
-        if (e.ctrlKey && (key === 's' || key === 'S')) { e.preventDefault(); return false; }
-        if (e.ctrlKey && e.shiftKey && (key === 'I' || key === 'i' || key === 73)) { e.preventDefault(); return false; }
-        if (e.ctrlKey && e.shiftKey && (key === 'J' || key === 'j' || key === 74)) { e.preventDefault(); return false; }
-        if (e.ctrlKey && e.shiftKey && (key === 'C' || key === 'c' || key === 67)) { e.preventDefault(); return false; }
-        if (e.ctrlKey && (key === 'u' || key === 'U' || key === 85)) { e.preventDefault(); return false; }
-        if (e.ctrlKey && (key === 'p' || key === 'P' || key === 80)) { e.preventDefault(); return false; }
+        var key = (e.key || '').toLowerCase();
+        var code = e.keyCode || e.which;
+        if (key === 'f12' || code === 123) return stop(e);
+        if (e.ctrlKey && (key === 's' || key === 'u' || key === 'p')) return stop(e);
+        if (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'j' || key === 'c' || code === 73 || code === 74 || code === 67)) return stop(e);
+        if (e.metaKey && (key === 'u' || key === 's' || key === 'p')) return stop(e);
+        if (e.ctrlKey && key === 'u') return stop(e);
     };
     document.addEventListener('keydown', k, true);
     document.addEventListener('keyup', k, true);
-    document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
-    document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; }, true);
-    document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; }, true);
-    document.addEventListener('copy', function(e) { e.preventDefault(); return false; }, true);
-    document.addEventListener('cut', function(e) { e.preventDefault(); return false; }, true);
+    document.addEventListener('contextmenu', stop, true);
+    document.addEventListener('selectstart', stop, true);
+    document.addEventListener('dragstart', stop, true);
+    document.addEventListener('copy', stop, true);
+    document.addEventListener('cut', stop, true);
+    document.addEventListener('paste', stop, true);
     try {
         document.body.style.webkitUserSelect = 'none';
         document.body.style.userSelect = 'none';
@@ -29,4 +34,4 @@
             if (w > 140 || h > 140) { document.body.style.filter = 'blur(12px)'; document.body.style.pointerEvents = 'none'; }
         } catch (_) {}
     }, 800);
-})();
+    })();

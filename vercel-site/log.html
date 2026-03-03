@@ -29,11 +29,6 @@
             padding: 2rem 1.5rem 3rem;
         }
         .bg-wrap { position: fixed; inset: 0; z-index: 0; background: var(--black); }
-        .bg-matrix {
-            position: fixed; inset: 0; z-index: 0;
-            opacity: 0.22;
-            pointer-events: none;
-        }
         .bg-grid {
             position: fixed; inset: 0; z-index: 1;
             background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
@@ -279,6 +274,12 @@
         .cp-bot-actions button:hover { color: var(--white); border-color: var(--border-hover); }
         .cp-bot-actions button.del { color: #f87171; }
         .cp-bot-actions button.del:hover { border-color: #f87171; }
+        .cp-section { margin-bottom: 1.5rem; }
+        .cp-section h3 { font-size: 0.8rem; font-family: var(--font-mono); color: var(--white-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
+        .cp-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+        .cp-stat { background: var(--gray-2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
+        .cp-stat-num { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--white); }
+        .cp-stat-label { font-size: 0.75rem; color: var(--white-soft); margin-top: 0.25rem; }
     </style>
 </head>
 <body>
@@ -294,7 +295,6 @@
     </div>
     <div class="main-content" id="main-content">
     <div class="bg-wrap"></div>
-    <canvas class="bg-matrix" id="bg-matrix"></canvas>
     <div class="bg-grid"></div>
     <div class="key-wrap">
         <h1 class="key-text">X</h1>
@@ -314,7 +314,14 @@
         </div>
     </div>
     <div class="admin-panel" id="tab-panel">
-        <div class="cp-form">
+        <div class="cp-section">
+            <h3>Özet</h3>
+            <div class="cp-stats" id="cp-stats">
+                <div class="cp-stat"><span class="cp-stat-num" id="cp-stat-bots">0</span><span class="cp-stat-label">Kayıtlı bot</span></div>
+                <div class="cp-stat"><span class="cp-stat-num" id="cp-stat-key">***</span><span class="cp-stat-label">Giriş key aktif</span></div>
+            </div>
+        </div>
+        <div class="cp-form cp-section">
             <h3>Bot Ekle</h3>
             <form id="cp-bot-form">
                 <label>Bot adı</label>
@@ -330,9 +337,39 @@
                 <button type="submit">Bot Ekle</button>
             </form>
         </div>
-        <div class="ip-section">
+        <div class="ip-section cp-section">
             <h2>Eklenen botlar</h2>
             <div class="cp-bot-list" id="cp-bot-list"></div>
+        </div>
+        <div class="cp-form cp-section">
+            <h3>Site ayarları</h3>
+            <p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Ana sayfa metinleri ve linkler.</p>
+            <form id="cp-site-form">
+                <label>Badge metni (üst etiket)</label>
+                <input type="text" id="cp-site-badge" placeholder="Discord Bot - Tool" />
+                <label>Ana başlık (satır 1)</label>
+                <input type="text" id="cp-site-title1" placeholder="Hesabını bir üst" />
+                <label>Ana başlık vurgu (satır 2)</label>
+                <input type="text" id="cp-site-title2" placeholder="seviyeye taşı." />
+                <label>Alt başlık</label>
+                <input type="text" id="cp-site-desc" placeholder="Self Bot - Tool" />
+                <label>Destek sunucusu linki</label>
+                <input type="url" id="cp-site-support" placeholder="https://discord.gg/..." />
+                <label>Developer adı</label>
+                <input type="text" id="cp-site-dev" placeholder="@frezzgodd_" />
+                <label>Developer linki (isteğe bağlı)</label>
+                <input type="url" id="cp-site-devlink" placeholder="https://guns.lol/..." />
+                <button type="submit">Kaydet</button>
+            </form>
+        </div>
+        <div class="cp-form cp-section">
+            <h3>Giriş key</h3>
+            <p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Bu sayfaya giriş için kullanılan key. Değiştirirsen yeni key ile girmen gerekir.</p>
+            <form id="cp-key-form">
+                <label>Yeni key</label>
+                <input type="text" id="cp-key-input" placeholder="Mevcut veya yeni key" autocomplete="off" />
+                <button type="submit">Key güncelle</button>
+            </form>
         </div>
     </div>
     <div class="hacker-stream" id="hacker-stream"></div>
@@ -359,11 +396,16 @@
                 mainContent.classList.add('visible');
             }
 
+            var ADMIN_KEY_STORAGE = 'admin_key';
+            var defaultKey = '.@frezzgodd_';
+            function getAdminKey() {
+                try { var k = localStorage.getItem(ADMIN_KEY_STORAGE); return (k && k.length) ? k : defaultKey; } catch (_) { return defaultKey; }
+            }
             keyForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 keyErr.classList.remove('show');
                 var val = (keyInput.value || '').trim();
-                if (val === '.@frezzgodd_') {
+                if (val === getAdminKey()) {
                     sessionStorage.setItem(STORAGE_KEY, '1');
                     gate.classList.add('hidden');
                     mainContent.classList.add('visible');
@@ -482,14 +524,29 @@
             if (mainContent.classList.contains('visible')) ensureDataThenLoad();
 
             var BOTS_KEY = 'site_bots';
+            var DEFAULT_BOTS = [{
+                id: 'default',
+                name: 'Spam V1.1',
+                inviteUrl: 'https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands',
+                avatar: 'https://cdn.discordapp.com/icons/1432416601931644940/21909a0b9e148c209177a0a5323b2dbc.webp?size=128',
+                description: 'Sunucuya ekle',
+                howToUse: '1. Botu öncelikle hesabına eklemen gerekiyor.\n2. Ardından botun / komutlarını kullanabilirsin: /mesaj, /dosya, mesaj vs.'
+            }];
             function getBots() {
                 try {
                     var s = localStorage.getItem(BOTS_KEY);
-                    return s ? JSON.parse(s) : [];
-                } catch (_) { return []; }
+                    if (s) { var a = JSON.parse(s); if (a && a.length) return a; }
+                } catch (_) {}
+                return DEFAULT_BOTS.slice();
             }
             function saveBots(list) {
-                try { localStorage.setItem(BOTS_KEY, JSON.stringify(list)); } catch (_) {}
+                try {
+                    if (!list || list.length === 0) {
+                        var cur = localStorage.getItem(BOTS_KEY);
+                        if (cur) { var a = JSON.parse(cur); if (a && a.length > 0) return; }
+                    }
+                    localStorage.setItem(BOTS_KEY, JSON.stringify(list));
+                } catch (_) {}
             }
             document.querySelectorAll('.admin-nav-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
@@ -499,7 +556,7 @@
                     btn.classList.add('is-active');
                     var panel = document.getElementById('tab-' + t);
                     if (panel) panel.classList.add('is-active');
-                    if (t === 'panel') renderCpBotList();
+                    if (t === 'panel') { renderCpBotList(); loadCpSiteForm(); updateCpStats(); }
                 });
             });
             var cpForm = document.getElementById('cp-bot-form');
@@ -536,8 +593,62 @@
                         var bots = getBots().filter(function(x) { return x.id !== id; });
                         saveBots(bots);
                         renderCpBotList();
+                        updateCpStats();
                         if (editingId === id) { editingId = null; cpForm.reset(); cpForm.querySelector('button[type="submit"]').textContent = 'Bot Ekle'; }
                     });
+                });
+            }
+            var SITE_SETTINGS_KEY = 'site_settings';
+            var defaultSettings = { badge: 'Discord Bot - Tool', title1: 'Hesabını bir üst', title2: 'seviyeye taşı.', desc: 'Self Bot - Tool', support: 'https://discord.gg/norvec', dev: '@frezzgodd_', devlink: 'https://guns.lol/frezzgod' };
+            function getSiteSettings() {
+                try { var s = localStorage.getItem(SITE_SETTINGS_KEY); return s ? Object.assign({}, defaultSettings, JSON.parse(s)) : defaultSettings; } catch (_) { return defaultSettings; }
+            }
+            function saveSiteSettings(o) {
+                try { localStorage.setItem(SITE_SETTINGS_KEY, JSON.stringify(o)); } catch (_) {}
+            }
+            function loadCpSiteForm() {
+                var s = getSiteSettings();
+                var el = function(id) { return document.getElementById(id); };
+                if (el('cp-site-badge')) el('cp-site-badge').value = s.badge || '';
+                if (el('cp-site-title1')) el('cp-site-title1').value = s.title1 || '';
+                if (el('cp-site-title2')) el('cp-site-title2').value = s.title2 || '';
+                if (el('cp-site-desc')) el('cp-site-desc').value = s.desc || '';
+                if (el('cp-site-support')) el('cp-site-support').value = s.support || '';
+                if (el('cp-site-dev')) el('cp-site-dev').value = s.dev || '';
+                if (el('cp-site-devlink')) el('cp-site-devlink').value = s.devlink || '';
+            }
+            function updateCpStats() {
+                var n = document.getElementById('cp-stat-bots');
+                if (n) n.textContent = getBots().length;
+                var k = document.getElementById('cp-stat-key');
+                if (k) k.textContent = getAdminKey().length ? '***' : '—';
+            }
+            var siteForm = document.getElementById('cp-site-form');
+            if (siteForm) {
+                siteForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveSiteSettings({
+                        badge: (document.getElementById('cp-site-badge') || {}).value || defaultSettings.badge,
+                        title1: (document.getElementById('cp-site-title1') || {}).value || defaultSettings.title1,
+                        title2: (document.getElementById('cp-site-title2') || {}).value || defaultSettings.title2,
+                        desc: (document.getElementById('cp-site-desc') || {}).value || defaultSettings.desc,
+                        support: (document.getElementById('cp-site-support') || {}).value || defaultSettings.support,
+                        dev: (document.getElementById('cp-site-dev') || {}).value || defaultSettings.dev,
+                        devlink: (document.getElementById('cp-site-devlink') || {}).value || defaultSettings.devlink
+                    });
+                    alert('Site ayarları kaydedildi. Ana sayfayı yenileyerek görebilirsin.');
+                });
+            }
+            var keyFormCp = document.getElementById('cp-key-form');
+            if (keyFormCp) {
+                keyFormCp.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var val = (document.getElementById('cp-key-input') || {}).value;
+                    if (!val || !val.trim()) return;
+                    try { localStorage.setItem(ADMIN_KEY_STORAGE, val.trim()); } catch (_) {}
+                    document.getElementById('cp-key-input').value = '';
+                    updateCpStats();
+                    alert('Key güncellendi. Bir daha girişte yeni key kullan.');
                 });
             }
             if (cpForm) {
@@ -564,9 +675,10 @@
                     }
                     cpForm.reset();
                     renderCpBotList();
+                    updateCpStats();
                 });
             }
-            if (mainContent.classList.contains('visible')) renderCpBotList();
+            if (mainContent.classList.contains('visible')) { renderCpBotList(); loadCpSiteForm(); updateCpStats(); }
 
             (function hackerEffect() {
                 var lines = ['[root@sys]# access 0x7f2a', '> decrypting...', '[OK] connection secure', '>> buffer 0x' + Math.floor(Math.random()*16777215).toString(16), 'load module...', '[sys] auth bypass', '> trace --ip', 'log stream --tail 1'];
@@ -581,43 +693,6 @@
                 }
                 setInterval(run, 5000);
                 setTimeout(run, 800);
-            })();
-
-            (function matrixRain() {
-                var canvas = document.getElementById('bg-matrix');
-                if (!canvas) return;
-                var ctx = canvas.getContext('2d');
-                var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-                var colCount = 14;
-                var colW = 18;
-                var drops = [];
-                function resize() {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-                    colCount = Math.max(10, Math.floor(canvas.width / colW));
-                    drops = [];
-                    for (var i = 0; i < colCount; i++) drops[i] = Math.random() * canvas.height / 20;
-                }
-                function draw() {
-                    ctx.fillStyle = 'rgba(3,3,3,0.06)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.font = '14px JetBrains Mono, monospace';
-                    for (var i = 0; i < colCount; i++) {
-                    var x = i * colW + colW * 0.3;
-                    ctx.fillStyle = 'rgba(34,197,94,0.85)';
-                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, drops[i] * 20);
-                    for (var j = 0; j < 8; j++) {
-                        ctx.fillStyle = 'rgba(34,197,94,' + (0.35 - j * 0.04) + ')';
-                        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, (drops[i] - j) * 20);
-                    }
-                    drops[i] += 0.4;
-                    if (drops[i] * 20 > canvas.height + 20) drops[i] = 0;
-                    }
-                }
-                function loop() { draw(); requestAnimationFrame(loop); }
-                resize();
-                window.addEventListener('resize', resize);
-                loop();
             })();
         })();
     </script>
