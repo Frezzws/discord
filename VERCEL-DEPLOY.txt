@@ -1,0 +1,44 @@
+VERCEL'E DEPLOY - HERKES SITEYI GOREBILIR
+=========================================
+
+YENI SITE NASIL ACILIR? (Zaten Vercel hesabin varsa)
+----------------------------------------------------
+1) https://vercel.com/dashboard - giris yap
+2) Sag ust veya ana sayfada "Add New" - "Project" tikla
+3) "Import Git Repository" bolumunde:
+   - Bu projeyi GitHub'a attiysan: o repo'yu sec
+   - Atmadiysan: "Import third-party Git Repository" veya altta
+     "Deploy without Git" / "Upload" ile site klasorunu ZIP yukleyebilirsin
+4) Repo sectikten sonra "Import" / "Continue" ile ilerle
+5) ONEMLI: "Root Directory" yanindaki "Edit"e tikla - "site" yaz - Continue
+6) Framework Preset: "Other" | Build Command: bos | Output Directory: bos
+7) "Deploy" tikla - bitti. Yeni sitenin linki: https://proje-adi.vercel.app
+
+1) Vercel hesabi
+   - https://vercel.com - Giris yap (GitHub ile baglanabilirsin).
+
+2) Projeyi Vercel'e bagla
+   - "Add New" - "Project"
+   - Bu klasoru GitHub'a atip repo sec, veya "Import" ile ZIP / yerel klasoru yukle.
+   - Root Directory: site YAZ (sadece bu klasor gider; bot kodu, .env GITMEZ).
+   - Build: Framework Preset "Other" sec; Build Command bos birak.
+   - Output Directory: bos. Deploy tikla.
+
+   Site acilmiyorsa: Vercel dashboard - Project - Settings - General -
+   "Build & Development Settings" - Build Command'i sil / bos birak, Output Directory bos.
+   Redeploy yap.
+
+3) Environment Variables (Vercel dashboard - Project - Settings - Environment Variables)
+   - LOG_SECRET = (istedigin gizli anahtar)
+   Bunu ekle ki /log sayfasinda sadece sen anahtarla girebilesin.
+
+4) Log kaydi icin KV (opsiyonel)
+   - Vercel dashboard - Project - Storage - Create Database - KV (Redis)
+   - Olustur, projeye bagla. Baglandiktan sonra API'ler otomatik KV'ye yazar.
+
+5) Sonuc
+   - Deploy sonrasi sana https://xxx.vercel.app gibi bir link verilir.
+   - Herkes bu linke girince bot davet sayfani gorur.
+   - Sol alttaki x - /log - LOG_SECRET ile sadece sen loglari gorursun.
+
+OZET: Root Directory = site yap; boylece token/bot kodu hic yuklenmez.

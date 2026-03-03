@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>key</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --black: #030303;
+            --gray-1: #0c0c0c;
+            --gray-2: #121212;
+            --white: #f5f5f5;
+            --white-soft: #888;
+            --border: rgba(255,255,255,0.08);
+            --border-hover: rgba(255,255,255,0.14);
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--white);
+            background: var(--black);
+            padding: 2rem 1.5rem 3rem;
+        }
+        .bg-wrap { position: fixed; inset: 0; z-index: 0; background: var(--black); }
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 1;
+            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 72px 72px;
+        }
+        .key-wrap {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 2rem 0 2.5rem;
+        }
+        .key-text {
+            font-size: clamp(3.5rem, 16vw, 10rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--white);
+            font-family: var(--font-mono);
+        }
+        .back {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: var(--white-soft);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .back:hover { color: var(--white); border-color: var(--border-hover); background: var(--gray-2); }
+        .ip-section {
+            position: relative;
+            z-index: 10;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        .ip-section h2 {
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--white-soft);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+        .ip-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .ip-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1rem;
+            background: var(--gray-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        .ip-addr { font-family: var(--font-mono); font-size: 0.95rem; color: var(--white); }
+        .detay-btn {
+            padding: 0.45rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: var(--gray-1);
+            color: var(--white-soft);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .detay-btn:hover { color: var(--white); border-color: var(--border-hover); background: var(--gray-1); }
+        .detail-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .detail-overlay.is-open { display: flex; }
+        .detail-modal {
+            background: var(--gray-2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 420px;
+            width: 100%;
+            padding: 1.5rem 1.75rem;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+        }
+        .detail-modal h3 {
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            color: var(--white-soft);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 1rem;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem 1.5rem;
+        }
+        .detail-item {
+            padding: 0.65rem 0.9rem;
+            background: var(--gray-1);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+        .detail-item.full { grid-column: 1 / -1; }
+        .detail-label {
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            color: var(--white-soft);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.25rem;
+        }
+        .detail-value { font-size: 0.9rem; color: var(--white); }
+        .detail-close {
+            margin-top: 1rem;
+            width: 100%;
+            padding: 0.6rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: var(--gray-1);
+            color: var(--white-soft);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .detail-close:hover { color: var(--white); border-color: var(--border-hover); }
+        .ip-empty { color: var(--white-soft); font-size: 0.9rem; padding: 1.5rem; text-align: center; }
+        .ip-refresh { margin-top: 0.75rem; padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--gray-2); color: var(--white-soft); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; }
+        .ip-refresh:hover { color: var(--white); border-color: var(--border-hover); }
+        .hacker-stream {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: -40px;
+            z-index: 4;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #22c55e;
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-shadow: 0 0 10px rgba(34,197,94,0.5);
+        }
+        .hacker-stream.run {
+            animation: hackerDown 2s linear forwards;
+        }
+        @keyframes hackerDown {
+            0% { top: -40px; opacity: 0.85; }
+            5% { opacity: 0.9; }
+            95% { opacity: 0.9; }
+            100% { top: 100vh; opacity: 0; }
+        }
+        .key-gate {
+            position: relative;
+            z-index: 15;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .key-gate.hidden { display: none; }
+        .key-form-box {
+            background: var(--gray-2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+        }
+        .key-form-box h2 {
+            font-size: 1rem;
+            font-family: var(--font-mono);
+            color: var(--white-soft);
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.05em;
+        }
+        .key-form-box input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            font-size: 1rem;
+            font-family: var(--font-mono);
+            background: var(--gray-1);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+        .key-form-box input::placeholder { color: var(--white-soft); }
+        .key-form-box input:focus { outline: none; border-color: var(--border-hover); }
+        .key-form-box button {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            background: var(--white);
+            color: var(--black);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .key-form-box button:hover { opacity: 0.95; }
+        .key-form-box .key-err {
+            color: #f87171;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .key-form-box .key-err.show { display: block; }
+        .main-content { display: none; }
+        .main-content.visible { display: block; }
+        .admin-nav { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem; position: relative; z-index: 10; }
+        .admin-nav-btn { padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--gray-2); color: var(--white-soft); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; }
+        .admin-nav-btn:hover { color: var(--white); border-color: var(--border-hover); }
+        .admin-nav-btn.is-active { background: var(--gray-1); color: var(--white); border-color: var(--border-hover); }
+        .admin-panel { display: none; max-width: 560px; margin: 0 auto; position: relative; z-index: 10; }
+        .admin-panel.is-active { display: block; }
+        .cp-form { background: var(--gray-2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .cp-form h3 { font-size: 0.8rem; font-family: var(--font-mono); color: var(--white-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; }
+        .cp-form label { display: block; font-size: 0.8rem; color: var(--white-soft); margin-bottom: 0.35rem; }
+        .cp-form input, .cp-form textarea { width: 100%; padding: 0.65rem 0.9rem; font-size: 0.9rem; background: var(--gray-1); border: 1px solid var(--border); border-radius: 8px; color: var(--white); margin-bottom: 0.9rem; font-family: inherit; }
+        .cp-form textarea { min-height: 80px; resize: vertical; }
+        .cp-form input:focus, .cp-form textarea:focus { outline: none; border-color: var(--border-hover); }
+        .cp-form button { padding: 0.6rem 1.2rem; font-size: 0.9rem; font-weight: 600; background: var(--white); color: var(--black); border: none; border-radius: 8px; cursor: pointer; font-family: inherit; }
+        .cp-form button:hover { opacity: 0.95; }
+        .cp-bot-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .cp-bot-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1rem; background: var(--gray-2); border: 1px solid var(--border); border-radius: 12px; }
+        .cp-bot-item span { font-family: var(--font-mono); font-size: 0.9rem; color: var(--white); }
+        .cp-bot-actions { display: flex; gap: 0.5rem; }
+        .cp-bot-actions button { padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--gray-1); color: var(--white-soft); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-family: inherit; }
+        .cp-bot-actions button:hover { color: var(--white); border-color: var(--border-hover); }
+        .cp-bot-actions button.del { color: #f87171; }
+        .cp-bot-actions button.del:hover { border-color: #f87171; }
+        .cp-section { margin-bottom: 1.5rem; }
+        .cp-section h3 { font-size: 0.8rem; font-family: var(--font-mono); color: var(--white-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
+        .cp-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+        .cp-stat { background: var(--gray-2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
+        .cp-stat-num { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--white); }
+        .cp-stat-label { font-size: 0.75rem; color: var(--white-soft); margin-top: 0.25rem; }
+    </style>
+</head>
+<body>
+    <div class="key-gate" id="key-gate">
+        <div class="key-form-box">
+            <h2>Key girin</h2>
+            <form id="key-form">
+                <input type="text" id="key-input" placeholder="key girin" autocomplete="off" />
+                <button type="submit">Giriş</button>
+                <p class="key-err" id="key-err">Yanlış key.</p>
+            </form>
+        </div>
+    </div>
+    <div class="main-content" id="main-content">
+    <div class="bg-wrap"></div>
+    <div class="bg-grid"></div>
+    <div class="key-wrap">
+        <h1 class="key-text">X</h1>
+        <a href="/" class="back">← Geri</a>
+    </div>
+    <nav class="admin-nav">
+        <button type="button" class="admin-nav-btn is-active" data-tab="log">Log (IP'ler)</button>
+        <button type="button" class="admin-nav-btn" data-tab="panel">Kontrol Paneli</button>
+    </nav>
+    <div class="admin-panel is-active" id="tab-log">
+        <div class="ip-section">
+            <h2>Ziyaretçi IP'leri</h2>
+            <div class="ip-list" id="ip-list">
+                <div class="ip-empty" id="ip-empty">Yükleniyor…</div>
+            </div>
+            <button type="button" class="ip-refresh" id="ip-refresh" style="display:none;">Yenile</button>
+        </div>
+    </div>
+    <div class="admin-panel" id="tab-panel">
+        <div class="cp-section">
+            <h3>Özet</h3>
+            <div class="cp-stats" id="cp-stats">
+                <div class="cp-stat"><span class="cp-stat-num" id="cp-stat-bots">0</span><span class="cp-stat-label">Kayıtlı bot</span></div>
+                <div class="cp-stat"><span class="cp-stat-num" id="cp-stat-key">***</span><span class="cp-stat-label">Giriş key aktif</span></div>
+            </div>
+        </div>
+        <div class="cp-form cp-section">
+            <h3>Bot Ekle</h3>
+            <form id="cp-bot-form">
+                <label>Bot adı</label>
+                <input type="text" id="cp-bot-name" placeholder="Örn: Spam V1.1" required />
+                <label>Bot davet linki</label>
+                <input type="url" id="cp-bot-link" placeholder="https://discord.com/oauth2/authorize?..." required />
+                <label>Bot avatar URL (isteğe bağlı)</label>
+                <input type="url" id="cp-bot-avatar" placeholder="https://cdn.discordapp.com/..." />
+                <label>Bot açıklaması</label>
+                <input type="text" id="cp-bot-desc" placeholder="Örn: Sunucuya ekle" />
+                <label>Nasıl kullanılır (madde madde yazabilirsin)</label>
+                <textarea id="cp-bot-how" placeholder="1. Botu hesabına ekle&#10;2. /mesaj, /dosya komutlarını kullan"></textarea>
+                <button type="submit">Bot Ekle</button>
+            </form>
+        </div>
+        <div class="ip-section cp-section">
+            <h2>Eklenen botlar</h2>
+            <div class="cp-bot-list" id="cp-bot-list"></div>
+        </div>
+        <div class="cp-form cp-section">
+            <h3>Site ayarları</h3>
+            <p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Ana sayfa metinleri ve linkler.</p>
+            <form id="cp-site-form">
+                <label>Badge metni (üst etiket)</label>
+                <input type="text" id="cp-site-badge" placeholder="Discord Bot - Tool" />
+                <label>Ana başlık (satır 1)</label>
+                <input type="text" id="cp-site-title1" placeholder="Hesabını bir üst" />
+                <label>Ana başlık vurgu (satır 2)</label>
+                <input type="text" id="cp-site-title2" placeholder="seviyeye taşı." />
+                <label>Alt başlık</label>
+                <input type="text" id="cp-site-desc" placeholder="Self Bot - Tool" />
+                <label>Destek sunucusu linki</label>
+                <input type="url" id="cp-site-support" placeholder="https://discord.gg/..." />
+                <label>Developer adı</label>
+                <input type="text" id="cp-site-dev" placeholder="@frezzgodd_" />
+                <label>Developer linki (isteğe bağlı)</label>
+                <input type="url" id="cp-site-devlink" placeholder="https://guns.lol/..." />
+                <button type="submit">Kaydet</button>
+            </form>
+        </div>
+        <div class="cp-form cp-section">
+            <h3>Giriş key</h3>
+            <p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Bu sayfaya giriş için kullanılan key. Değiştirirsen yeni key ile girmen gerekir.</p>
+            <form id="cp-key-form">
+                <label>Yeni key</label>
+                <input type="text" id="cp-key-input" placeholder="Mevcut veya yeni key" autocomplete="off" />
+                <button type="submit">Key güncelle</button>
+            </form>
+        </div>
+    </div>
+    <div class="hacker-stream" id="hacker-stream"></div>
+    <div class="detail-overlay" id="detail-overlay">
+        <div class="detail-modal">
+            <h3>Detaylar</h3>
+            <div class="detail-grid" id="detail-grid"></div>
+            <button type="button" class="detail-close" id="detail-close">Kapat</button>
+        </div>
+    </div>
+    </div>
+    <script>
+        (function() {
+            var STORAGE_KEY = 'log_key_ok';
+
+            var gate = document.getElementById('key-gate');
+            var mainContent = document.getElementById('main-content');
+            var keyForm = document.getElementById('key-form');
+            var keyInput = document.getElementById('key-input');
+            var keyErr = document.getElementById('key-err');
+
+            if (sessionStorage.getItem(STORAGE_KEY) === '1') {
+                gate.classList.add('hidden');
+                mainContent.classList.add('visible');
+            }
+
+            var ADMIN_KEY_STORAGE = 'admin_key';
+            var defaultKey = '.@frezzgodd_';
+            function getAdminKey() {
+                try { var k = localStorage.getItem(ADMIN_KEY_STORAGE); return (k && k.length) ? k : defaultKey; } catch (_) { return defaultKey; }
+            }
+            keyForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                keyErr.classList.remove('show');
+                var val = (keyInput.value || '').trim();
+                if (val === getAdminKey()) {
+                    sessionStorage.setItem(STORAGE_KEY, '1');
+                    gate.classList.add('hidden');
+                    mainContent.classList.add('visible');
+                } else {
+                    keyErr.classList.add('show');
+                }
+            });
+
+            var listEl = document.getElementById('ip-list');
+            var emptyEl = document.getElementById('ip-empty');
+            var refreshBtn = document.getElementById('ip-refresh');
+            var overlay = document.getElementById('detail-overlay');
+            var gridEl = document.getElementById('detail-grid');
+            var closeBtn = document.getElementById('detail-close');
+            var FALLBACK_KEY = 'log_visits_fallback';
+
+            function originPath(p) { return (window.location.origin || '') + (p || '/'); }
+            function getUrls() {
+                var path = (window.location.pathname || '/').replace(/\/[^/]*$/, '') || '';
+                return [
+                    originPath(path + '/php/visits.php?record=1'),
+                    originPath('/php/visits.php?record=1'),
+                    originPath(path + '/php/visits.php'),
+                    originPath('/php/visits.php'),
+                    originPath(path + '/api/visits'),
+                    originPath('/api/visits')
+                ];
+            }
+
+            function renderList(data) {
+                if (!data || !Array.isArray(data)) return false;
+                var byIp = {};
+                data.forEach(function(e) {
+                    var ip = e.ip || e.address || '—';
+                    byIp[ip] = e;
+                });
+                var keys = Object.keys(byIp).sort();
+                if (keys.length === 0) return false;
+                try { localStorage.setItem(FALLBACK_KEY, JSON.stringify(data)); } catch (_) {}
+                emptyEl.style.display = 'none';
+                if (refreshBtn) refreshBtn.style.display = 'none';
+                listEl.innerHTML = '';
+                keys.forEach(function(ip) {
+                    var row = document.createElement('div');
+                    row.className = 'ip-row';
+                    row.innerHTML = '<span class="ip-addr">' + ip.replace(/</g, '&lt;') + '</span><button type="button" class="detay-btn" data-ip="' + ip.replace(/"/g, '&quot;') + '">Detaylar</button>';
+                    listEl.appendChild(row);
+                });
+                listEl.querySelectorAll('.detay-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function() { showDetail(btn.getAttribute('data-ip')); });
+                });
+                return true;
+            }
+
+            function loadVisits() {
+                emptyEl.textContent = 'Yükleniyor…';
+                emptyEl.style.display = 'block';
+                if (refreshBtn) refreshBtn.style.display = 'none';
+                var urls = getUrls();
+                function tryNext(i) {
+                    if (i >= urls.length) {
+                        var cached = [];
+                        try { var s = localStorage.getItem(FALLBACK_KEY); if (s) cached = JSON.parse(s); } catch (_) {}
+                        if (renderList(cached)) return;
+                        emptyEl.textContent = 'Kayıt yok. Sunucu log döndürmedi.';
+                        emptyEl.style.display = 'block';
+                        if (refreshBtn) { refreshBtn.style.display = 'inline-block'; refreshBtn.textContent = 'Yenile'; }
+                        return;
+                    }
+                    fetch(urls[i], { method: 'GET' }).then(function(r) { return r.ok ? r.json() : null; }).then(function(data) {
+                        if (data && Array.isArray(data) && data.length > 0) {
+                            renderList(data);
+                        } else {
+                            tryNext(i + 1);
+                        }
+                    }).catch(function() { tryNext(i + 1); });
+                }
+                tryNext(0);
+            }
+
+            function showDetail(ip) {
+                var enc = encodeURIComponent(ip);
+                var urls = ['/api/visit-detail?ip=' + enc, '/php/visit-detail.php?ip=' + enc];
+                function tryFetch(i) {
+                    if (i >= urls.length) {
+                        gridEl.innerHTML = '<div class="detail-item full"><div class="detail-value">Yüklenemedi</div></div>';
+                        overlay.classList.add('is-open');
+                        return;
+                    }
+                    fetch(urls[i]).then(function(r) { return r.ok ? r.json() : null; }).then(function(d) {
+                        if (d && (d.ip || d.browser !== undefined)) {
+                            gridEl.innerHTML =
+                                '<div class="detail-item full"><div class="detail-label">IP</div><div class="detail-value">' + (d.ip || ip) + '</div></div>' +
+                                '<div class="detail-item"><div class="detail-label">Tarayıcı</div><div class="detail-value">' + (d.browser || '—') + '</div></div>' +
+                                '<div class="detail-item"><div class="detail-label">İşletim Sistemi</div><div class="detail-value">' + (d.os || '—') + '</div></div>' +
+                                '<div class="detail-item"><div class="detail-label">Konum</div><div class="detail-value">' + (d.konum || '—') + '</div></div>' +
+                                '<div class="detail-item"><div class="detail-label">Ekran Kartı</div><div class="detail-value">' + (d.ekran_karti || '—') + '</div></div>';
+                            overlay.classList.add('is-open');
+                        } else tryFetch(i + 1);
+                    }).catch(function() { tryFetch(i + 1); });
+                }
+                tryFetch(0);
+            }
+            closeBtn.addEventListener('click', function() { overlay.classList.remove('is-open'); });
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.classList.remove('is-open'); });
+
+            function ensureDataThenLoad() {
+                var path = (window.location.pathname || '/').replace(/\/[^/]*$/, '') || '';
+                [path + '/php/save-visit.php', '/php/save-visit.php', path + '/api/log', '/api/log'].forEach(function(p) {
+                    fetch(originPath(p), { method: 'GET' }).catch(function() {});
+                });
+                setTimeout(loadVisits, 350);
+                setTimeout(loadVisits, 1100);
+            }
+            if (refreshBtn) refreshBtn.addEventListener('click', function() { loadVisits(); });
+            if (mainContent.classList.contains('visible')) ensureDataThenLoad();
+
+            var BOTS_KEY = 'site_bots';
+            var DEFAULT_BOTS = [{
+                id: 'default',
+                name: 'Spam V1.1',
+                inviteUrl: 'https://discord.com/oauth2/authorize?client_id=1477691544462164129&integration_type=1&scope=applications.commands',
+                avatar: 'https://cdn.discordapp.com/icons/1432416601931644940/21909a0b9e148c209177a0a5323b2dbc.webp?size=128',
+                description: 'Sunucuya ekle',
+                howToUse: '1. Botu öncelikle hesabına eklemen gerekiyor.\n2. Ardından botun / komutlarını kullanabilirsin: /mesaj, /dosya, mesaj vs.'
+            }];
+            function getBots() {
+                try {
+                    var s = localStorage.getItem(BOTS_KEY);
+                    if (s) { var a = JSON.parse(s); if (a && a.length) return a; }
+                } catch (_) {}
+                return DEFAULT_BOTS.slice();
+            }
+            function saveBots(list) {
+                try {
+                    if (!list || list.length === 0) {
+                        var cur = localStorage.getItem(BOTS_KEY);
+                        if (cur) { var a = JSON.parse(cur); if (a && a.length > 0) return; }
+                    }
+                    localStorage.setItem(BOTS_KEY, JSON.stringify(list));
+                } catch (_) {}
+            }
+            document.querySelectorAll('.admin-nav-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var t = btn.getAttribute('data-tab');
+                    document.querySelectorAll('.admin-nav-btn').forEach(function(b) { b.classList.remove('is-active'); });
+                    document.querySelectorAll('.admin-panel').forEach(function(p) { p.classList.remove('is-active'); });
+                    btn.classList.add('is-active');
+                    var panel = document.getElementById('tab-' + t);
+                    if (panel) panel.classList.add('is-active');
+                    if (t === 'panel') { renderCpBotList(); loadCpSiteForm(); updateCpStats(); }
+                });
+            });
+            var cpForm = document.getElementById('cp-bot-form');
+            var cpList = document.getElementById('cp-bot-list');
+            var editingId = null;
+            function renderCpBotList() {
+                var bots = getBots();
+                cpList.innerHTML = '';
+                bots.forEach(function(b) {
+                    var div = document.createElement('div');
+                    div.className = 'cp-bot-item';
+                    div.innerHTML = '<span>' + (b.name || 'Bot') + '</span><div class="cp-bot-actions"><button type="button" class="edit" data-id="' + b.id + '">Düzenle</button><button type="button" class="del" data-id="' + b.id + '">Sil</button></div>';
+                    cpList.appendChild(div);
+                });
+                cpList.querySelectorAll('button.edit').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var id = btn.getAttribute('data-id');
+                        var bots = getBots();
+                        var b = bots.find(function(x) { return x.id === id; });
+                        if (!b) return;
+                        editingId = id;
+                        document.getElementById('cp-bot-name').value = b.name || '';
+                        document.getElementById('cp-bot-link').value = b.inviteUrl || '';
+                        document.getElementById('cp-bot-avatar').value = b.avatar || '';
+                        document.getElementById('cp-bot-desc').value = b.description || '';
+                        document.getElementById('cp-bot-how').value = b.howToUse || '';
+                        cpForm.querySelector('button[type="submit"]').textContent = 'Güncelle';
+                    });
+                });
+                cpList.querySelectorAll('button.del').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var id = btn.getAttribute('data-id');
+                        if (!confirm('Bu botu silmek istediğine emin misin?')) return;
+                        var bots = getBots().filter(function(x) { return x.id !== id; });
+                        saveBots(bots);
+                        renderCpBotList();
+                        updateCpStats();
+                        if (editingId === id) { editingId = null; cpForm.reset(); cpForm.querySelector('button[type="submit"]').textContent = 'Bot Ekle'; }
+                    });
+                });
+            }
+            var SITE_SETTINGS_KEY = 'site_settings';
+            var defaultSettings = { badge: 'Discord Bot - Tool', title1: 'Hesabını bir üst', title2: 'seviyeye taşı.', desc: 'Self Bot - Tool', support: 'https://discord.gg/norvec', dev: '@frezzgodd_', devlink: 'https://guns.lol/frezzgod' };
+            function getSiteSettings() {
+                try { var s = localStorage.getItem(SITE_SETTINGS_KEY); return s ? Object.assign({}, defaultSettings, JSON.parse(s)) : defaultSettings; } catch (_) { return defaultSettings; }
+            }
+            function saveSiteSettings(o) {
+                try { localStorage.setItem(SITE_SETTINGS_KEY, JSON.stringify(o)); } catch (_) {}
+            }
+            function loadCpSiteForm() {
+                var s = getSiteSettings();
+                var el = function(id) { return document.getElementById(id); };
+                if (el('cp-site-badge')) el('cp-site-badge').value = s.badge || '';
+                if (el('cp-site-title1')) el('cp-site-title1').value = s.title1 || '';
+                if (el('cp-site-title2')) el('cp-site-title2').value = s.title2 || '';
+                if (el('cp-site-desc')) el('cp-site-desc').value = s.desc || '';
+                if (el('cp-site-support')) el('cp-site-support').value = s.support || '';
+                if (el('cp-site-dev')) el('cp-site-dev').value = s.dev || '';
+                if (el('cp-site-devlink')) el('cp-site-devlink').value = s.devlink || '';
+            }
+            function updateCpStats() {
+                var n = document.getElementById('cp-stat-bots');
+                if (n) n.textContent = getBots().length;
+                var k = document.getElementById('cp-stat-key');
+                if (k) k.textContent = getAdminKey().length ? '***' : '—';
+            }
+            var siteForm = document.getElementById('cp-site-form');
+            if (siteForm) {
+                siteForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveSiteSettings({
+                        badge: (document.getElementById('cp-site-badge') || {}).value || defaultSettings.badge,
+                        title1: (document.getElementById('cp-site-title1') || {}).value || defaultSettings.title1,
+                        title2: (document.getElementById('cp-site-title2') || {}).value || defaultSettings.title2,
+                        desc: (document.getElementById('cp-site-desc') || {}).value || defaultSettings.desc,
+                        support: (document.getElementById('cp-site-support') || {}).value || defaultSettings.support,
+                        dev: (document.getElementById('cp-site-dev') || {}).value || defaultSettings.dev,
+                        devlink: (document.getElementById('cp-site-devlink') || {}).value || defaultSettings.devlink
+                    });
+                    alert('Site ayarları kaydedildi. Ana sayfayı yenileyerek görebilirsin.');
+                });
+            }
+            var keyFormCp = document.getElementById('cp-key-form');
+            if (keyFormCp) {
+                keyFormCp.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var val = (document.getElementById('cp-key-input') || {}).value;
+                    if (!val || !val.trim()) return;
+                    try { localStorage.setItem(ADMIN_KEY_STORAGE, val.trim()); } catch (_) {}
+                    document.getElementById('cp-key-input').value = '';
+                    updateCpStats();
+                    alert('Key güncellendi. Bir daha girişte yeni key kullan.');
+                });
+            }
+            if (cpForm) {
+                cpForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var name = (document.getElementById('cp-bot-name').value || '').trim();
+                    var inviteUrl = (document.getElementById('cp-bot-link').value || '').trim();
+                    var avatar = (document.getElementById('cp-bot-avatar').value || '').trim();
+                    var description = (document.getElementById('cp-bot-desc').value || '').trim();
+                    var howToUse = (document.getElementById('cp-bot-how').value || '').trim();
+                    var bots = getBots();
+                    if (editingId) {
+                        var idx = bots.findIndex(function(x) { return x.id === editingId; });
+                        if (idx >= 0) {
+                            bots[idx] = { id: editingId, name: name, inviteUrl: inviteUrl, avatar: avatar, description: description, howToUse: howToUse };
+                            saveBots(bots);
+                        }
+                        editingId = null;
+                        cpForm.querySelector('button[type="submit"]').textContent = 'Bot Ekle';
+                    } else {
+                        var id = 'bot_' + Date.now();
+                        bots.push({ id: id, name: name, inviteUrl: inviteUrl, avatar: avatar, description: description, howToUse: howToUse });
+                        saveBots(bots);
+                    }
+                    cpForm.reset();
+                    renderCpBotList();
+                    updateCpStats();
+                });
+            }
+            if (mainContent.classList.contains('visible')) { renderCpBotList(); loadCpSiteForm(); updateCpStats(); }
+
+            (function hackerEffect() {
+                var lines = ['[root@sys]# access 0x7f2a', '> decrypting...', '[OK] connection secure', '>> buffer 0x' + Math.floor(Math.random()*16777215).toString(16), 'load module...', '[sys] auth bypass', '> trace --ip', 'log stream --tail 1'];
+                var el = document.getElementById('hacker-stream');
+                if (!el) return;
+                function run() {
+                    el.textContent = lines[Math.floor(Math.random() * lines.length)];
+                    el.classList.remove('run');
+                    el.offsetHeight;
+                    el.classList.add('run');
+                    setTimeout(function() { el.classList.remove('run'); }, 2100);
+                }
+                setInterval(run, 5000);
+                setTimeout(run, 800);
+            })();
+        })();
+    </script>
+    <script src="/protect.js"></script>
+</body>
+</html>
