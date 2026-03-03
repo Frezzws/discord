@@ -11,18 +11,18 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --black: #030303;
-            --black-2: #080808;
-            --gray-1: #0c0c0c;
-            --gray-2: #121212;
-            --gray-3: #1a1a1a;
+            --black: #050505;
+            --black-2: #0a0a0a;
+            --gray-1: #0f0f0f;
+            --gray-2: #161616;
+            --gray-3: #1e1e1e;
             --gray-4: #2a2a2a;
-            --gray-5: #404040;
-            --white: #f5f5f5;
-            --white-soft: #888;
-            --border: rgba(255,255,255,0.06);
-            --border-hover: rgba(255,255,255,0.12);
-            --accent: rgba(255,255,255,0.04);
+            --gray-5: #4a4a4a;
+            --white: #f0f0f0;
+            --white-soft: #9ca3af;
+            --border: rgba(255,255,255,0.08);
+            --border-hover: rgba(255,255,255,0.16);
+            --accent: rgba(255,255,255,0.05);
             --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
         }
         body {
@@ -454,28 +454,52 @@
             padding: 1rem 1.25rem;
             text-align: left;
         }
+        .modal-bot-card {
+            background: var(--gray-2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .modal-bot-card:last-child { margin-bottom: 0; }
+        .modal-bot-card:hover { border-color: var(--border-hover); box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+        .modal-bot-card .modal-how {
+            margin-top: 0;
+            padding: 0 1rem 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .modal-bot-card .modal-how-btn {
+            justify-content: space-between;
+            text-align: left;
+            margin-top: 0.5rem;
+            border-radius: 10px;
+        }
+        .modal-bot-card .modal-how-content {
+            margin-top: 0.5rem;
+            border-radius: 10px;
+        }
         .modal-bot {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
-            padding: 0.9rem 1rem;
-            background: var(--gray-1);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 0.5rem;
-            transition: border-color 0.2s, background 0.2s;
+            padding: 1rem 1rem;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            margin-bottom: 0;
+            transition: none;
         }
-        .modal-bot:last-child { margin-bottom: 0; }
-        .modal-bot.is-first { border-color: rgba(255,255,255,0.1); background: var(--black-2); }
-        .modal-bot.is-first:hover { border-color: var(--border-hover); }
-        .modal-bot-info { display: flex; align-items: center; gap: 0.75rem; text-align: left; flex: 1; min-width: 0; }
+        .modal-bot.is-first { border: none; background: transparent; }
+        .modal-bot.is-first:hover { border: none; }
+        .modal-bot-info { display: flex; align-items: center; gap: 0.85rem; text-align: left; flex: 1; min-width: 0; }
         .modal-bot-info > div { min-width: 0; }
-        .modal-bot-name { font-weight: 700; font-size: 1rem; color: var(--white); display: block; }
+        .modal-bot-name { font-weight: 700; font-size: 1.05rem; color: var(--white); display: block; letter-spacing: -0.02em; }
         .modal-bot-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             background: var(--gray-4);
             border: 1px solid var(--border);
             overflow: hidden;
@@ -486,20 +510,20 @@
             height: 100%;
             object-fit: cover;
         }
-        .modal-bot-meta { font-size: 0.8rem; color: var(--white-soft); margin-top: 0.15rem; display: block; }
+        .modal-bot-meta { font-size: 0.85rem; color: var(--white-soft); margin-top: 0.2rem; display: block; line-height: 1.4; }
         .modal-bot-add {
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
+            padding: 0.55rem 1.1rem;
+            font-size: 0.875rem;
             font-weight: 600;
             background: var(--white);
             color: var(--black);
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             text-decoration: none;
-            transition: filter 0.2s;
+            transition: filter 0.2s, transform 0.15s;
         }
-        .modal-bot-add:hover { filter: brightness(1.1); }
+        .modal-bot-add:hover { filter: brightness(1.08); transform: translateY(-1px); }
         .modal-close {
             position: absolute;
             top: 1rem;
@@ -520,7 +544,7 @@
         }
         .modal-close:hover { color: var(--white); border-color: var(--border-hover); }
         .modal-wrap { position: relative; }
-        /* Nasıl kullanılır (modal içinde) */
+        /* Nasıl kullanılır (bot kartının altında) */
         .modal-how {
             padding: 0 1.25rem 1.25rem;
             border-top: 1px solid var(--border);
@@ -720,7 +744,6 @@
                     <span class="modal-header-dev" id="header-dev-name">@frezzgodd_</span>
                 </div>
                 <div class="modal-bots" id="panel-bots-list" style="padding: 0.5rem 0;"></div>
-                <div class="modal-how-wrap" id="panel-how-wrap" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);"></div>
             </div>
         </section>
 
@@ -776,42 +799,38 @@
             function renderBotsPanel() {
                 var bots = getBots();
                 var listEl = document.getElementById('panel-bots-list');
-                var wrapEl = document.getElementById('panel-how-wrap');
                 var howInner = document.getElementById('panel-how-inner');
                 if (!listEl) return;
                 listEl.innerHTML = '';
                 bots.forEach(function(b, i) {
-                    var div = document.createElement('div');
-                    div.className = 'modal-bot' + (i === 0 ? ' is-first' : '');
+                    var name = b.name || 'Bot';
                     var avatarUrl = (b.avatar && b.avatar.trim()) ? b.avatar.trim() : 'https://cdn.discordapp.com/embed/avatars/0.png';
-                    div.innerHTML = '<div class="modal-bot-info"><div class="modal-bot-avatar"><img src="' + avatarUrl.replace(/"/g, '&quot;') + '" alt="' + (b.name || 'Bot').replace(/"/g, '&quot;') + '" width="44" height="44"></div><div><div class="modal-bot-name">' + (b.name || 'Bot').replace(/</g, '&lt;') + '</div><div class="modal-bot-meta">' + (b.description || 'Sunucuya ekle').replace(/</g, '&lt;') + '</div></div></div><a href="' + (b.inviteUrl || '#').replace(/"/g, '&quot;') + '" class="modal-bot-add" target="_blank" rel="noopener">Ekle</a>';
-                    listEl.appendChild(div);
-                });
-                if (wrapEl) {
-                    wrapEl.innerHTML = '';
-                    bots.forEach(function(b) {
-                        var name = b.name || 'Bot';
-                        var wrap = document.createElement('div');
-                        wrap.className = 'modal-how';
-                        var btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'modal-how-btn';
-                        btn.setAttribute('aria-expanded', 'false');
-                        btn.style.cssText = 'width: 100%;';
-                        btn.innerHTML = name.replace(/</g, '&lt;') + ' nasıl kullanılır <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
-                        var content = document.createElement('div');
-                        content.className = 'modal-how-content';
-                        content.innerHTML = '<h3># ' + name.replace(/</g, '&lt;') + ' Nasıl Kullanılır?</h3>' + howToHtml(b.howToUse, b.inviteUrl);
-                        wrap.appendChild(btn);
-                        wrap.appendChild(content);
-                        wrapEl.appendChild(wrap);
-                        btn.addEventListener('click', function() {
-                            var open = content.classList.toggle('is-open');
-                            btn.classList.toggle('is-open', open);
-                            btn.setAttribute('aria-expanded', open);
-                        });
+                    var card = document.createElement('div');
+                    card.className = 'modal-bot-card';
+                    var botRow = document.createElement('div');
+                    botRow.className = 'modal-bot' + (i === 0 ? ' is-first' : '');
+                    botRow.innerHTML = '<div class="modal-bot-info"><div class="modal-bot-avatar"><img src="' + avatarUrl.replace(/"/g, '&quot;') + '" alt="' + name.replace(/"/g, '&quot;') + '" width="48" height="48"></div><div><div class="modal-bot-name">' + name.replace(/</g, '&lt;') + '</div><div class="modal-bot-meta">' + (b.description || 'Sunucuya ekle').replace(/</g, '&lt;') + '</div></div></div><a href="' + (b.inviteUrl || '#').replace(/"/g, '&quot;') + '" class="modal-bot-add" target="_blank" rel="noopener">Ekle</a>';
+                    card.appendChild(botRow);
+                    var howWrap = document.createElement('div');
+                    howWrap.className = 'modal-how';
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'modal-how-btn';
+                    btn.setAttribute('aria-expanded', 'false');
+                    btn.innerHTML = name.replace(/</g, '&lt;') + ' nasıl kullanılır <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+                    var content = document.createElement('div');
+                    content.className = 'modal-how-content';
+                    content.innerHTML = '<h3># ' + name.replace(/</g, '&lt;') + ' Nasıl Kullanılır?</h3>' + howToHtml(b.howToUse, b.inviteUrl);
+                    howWrap.appendChild(btn);
+                    howWrap.appendChild(content);
+                    card.appendChild(howWrap);
+                    btn.addEventListener('click', function() {
+                        var open = content.classList.toggle('is-open');
+                        btn.classList.toggle('is-open', open);
+                        btn.setAttribute('aria-expanded', open);
                     });
-                }
+                    listEl.appendChild(card);
+                });
                 if (howInner && bots.length > 0) {
                     var first = bots[0];
                     howInner.innerHTML = '<h3># ' + (first.name || 'Bot').replace(/</g, '&lt;') + ' Nasıl Kullanılır?</h3><p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Bu bölüm <strong style="color: var(--white);">' + (first.name || 'Bot').replace(/</g, '&lt;') + '</strong> botu içindir.</p>' + howToHtml(first.howToUse, first.inviteUrl);
