@@ -300,6 +300,15 @@
         .cp-stat { background: var(--gray-2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
         .cp-stat-num { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--white); }
         .cp-stat-label { font-size: 0.75rem; color: var(--white-soft); margin-top: 0.25rem; }
+        .cp-subnav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; position: relative; z-index: 10; }
+        .cp-subnav-btn { padding: 0.5rem 0.9rem; font-size: 0.85rem; background: var(--gray-2); color: var(--white-soft); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; }
+        .cp-subnav-btn:hover { color: var(--white); border-color: var(--border-hover); }
+        .cp-subnav-btn.is-active { background: var(--gray-1); color: var(--white); border-color: var(--border-hover); }
+        .cp-block { display: none; }
+        .cp-block.is-active { display: block; }
+        .cp-sale-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem 1rem; background: var(--gray-2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.5rem; }
+        .cp-sale-item span { font-size: 0.9rem; color: var(--white); }
+        .cp-sale-item .price { font-family: var(--font-mono); color: var(--white-soft); }
     </style>
 </head>
 <body>
@@ -339,58 +348,90 @@
             <h3>Özet</h3>
             <div class="cp-stats" id="cp-stats">
                 <div class="cp-stat"><span class="cp-stat-num" id="cp-stat-bots">0</span><span class="cp-stat-label">Kayıtlı bot</span></div>
-                <div class="cp-stat"><span class="cp-stat-num" id="cp-stat-key">***</span><span class="cp-stat-label">Giriş key aktif</span></div>
+                <div class="cp-stat"><span class="cp-stat-num" id="cp-stat-sales">0</span><span class="cp-stat-label">Satış</span></div>
+                <div class="cp-stat"><span class="cp-stat-num" id="cp-stat-key">***</span><span class="cp-stat-label">Key aktif</span></div>
             </div>
         </div>
-        <div class="cp-form cp-section">
-            <h3>Bot Ekle</h3>
-            <form id="cp-bot-form">
-                <label>Bot adı</label>
-                <input type="text" id="cp-bot-name" placeholder="Örn: Spam V1.1" required />
-                <label>Bot davet linki</label>
-                <input type="url" id="cp-bot-link" placeholder="https://discord.com/oauth2/authorize?..." required />
-                <label>Bot avatar URL (isteğe bağlı)</label>
-                <input type="url" id="cp-bot-avatar" placeholder="https://cdn.discordapp.com/..." />
-                <label>Bot açıklaması</label>
-                <input type="text" id="cp-bot-desc" placeholder="Örn: Sunucuya ekle" />
-                <label>Nasıl kullanılır (madde madde yazabilirsin)</label>
-                <textarea id="cp-bot-how" placeholder="1. Botu hesabına ekle&#10;2. /mesaj, /dosya komutlarını kullan"></textarea>
-                <button type="submit">Bot Ekle</button>
-            </form>
+        <nav class="cp-subnav">
+            <button type="button" class="cp-subnav-btn is-active" data-cp="bots">Botlar</button>
+            <button type="button" class="cp-subnav-btn" data-cp="sales">Satışlar</button>
+            <button type="button" class="cp-subnav-btn" data-cp="site">Site & Key</button>
+        </nav>
+        <div class="cp-block is-active" id="cp-block-bots">
+            <div class="cp-form cp-section">
+                <h3>Bot Ekle</h3>
+                <form id="cp-bot-form">
+                    <label>Bot adı</label>
+                    <input type="text" id="cp-bot-name" placeholder="Örn: Spam V1.1" required />
+                    <label>Bot davet linki</label>
+                    <input type="url" id="cp-bot-link" placeholder="https://discord.com/oauth2/authorize?..." required />
+                    <label>Bot avatar URL (isteğe bağlı)</label>
+                    <input type="url" id="cp-bot-avatar" placeholder="https://cdn.discordapp.com/..." />
+                    <label>Bot açıklaması</label>
+                    <input type="text" id="cp-bot-desc" placeholder="Örn: Sunucuya ekle" />
+                    <label>Nasıl kullanılır (madde madde)</label>
+                    <textarea id="cp-bot-how" placeholder="1. Botu hesabına ekle&#10;2. /mesaj, /dosya komutlarını kullan"></textarea>
+                    <button type="submit">Bot Ekle</button>
+                </form>
+            </div>
+            <div class="ip-section cp-section">
+                <h2>Eklenen botlar</h2>
+                <div class="cp-bot-list" id="cp-bot-list"></div>
+            </div>
         </div>
-        <div class="ip-section cp-section">
-            <h2>Eklenen botlar</h2>
-            <div class="cp-bot-list" id="cp-bot-list"></div>
+        <div class="cp-block" id="cp-block-sales">
+            <div class="cp-form cp-section">
+                <h3>Satış Ekle</h3>
+                <form id="cp-sale-form">
+                    <label>Başlık</label>
+                    <input type="text" id="cp-sale-title" placeholder="Örn: Premium Bot Lisansı" required />
+                    <label>Açıklama</label>
+                    <textarea id="cp-sale-desc" placeholder="Ne sunduğunu kısaca yaz" rows="2"></textarea>
+                    <label>Fiyat (sadece rakam veya metin)</label>
+                    <input type="text" id="cp-sale-price" placeholder="Örn: 50 veya Ücretsiz" />
+                    <label>Para birimi</label>
+                    <input type="text" id="cp-sale-currency" placeholder="TL, USD, EUR vb." />
+                    <label>İletişim / Satın al linki (isteğe bağlı)</label>
+                    <input type="url" id="cp-sale-link" placeholder="https://..." />
+                    <button type="submit">Satış Ekle</button>
+                </form>
+            </div>
+            <div class="ip-section cp-section">
+                <h2>Eklenen satışlar</h2>
+                <div id="cp-sale-list"></div>
+            </div>
         </div>
-        <div class="cp-form cp-section">
-            <h3>Site ayarları</h3>
-            <p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Ana sayfa metinleri ve linkler.</p>
-            <form id="cp-site-form">
-                <label>Badge metni (üst etiket)</label>
-                <input type="text" id="cp-site-badge" placeholder="Discord Bot - Tool" />
-                <label>Ana başlık (satır 1)</label>
-                <input type="text" id="cp-site-title1" placeholder="Hesabını bir üst" />
-                <label>Ana başlık vurgu (satır 2)</label>
-                <input type="text" id="cp-site-title2" placeholder="seviyeye taşı." />
-                <label>Alt başlık</label>
-                <input type="text" id="cp-site-desc" placeholder="Self Bot - Tool" />
-                <label>Destek sunucusu linki</label>
-                <input type="url" id="cp-site-support" placeholder="https://discord.gg/..." />
-                <label>Developer adı</label>
-                <input type="text" id="cp-site-dev" placeholder="@frezzgodd_" />
-                <label>Developer linki (isteğe bağlı)</label>
-                <input type="url" id="cp-site-devlink" placeholder="https://guns.lol/..." />
-                <button type="submit">Kaydet</button>
-            </form>
-        </div>
-        <div class="cp-form cp-section">
-            <h3>Giriş key</h3>
-            <p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Bu sayfaya giriş için kullanılan key. Değiştirirsen yeni key ile girmen gerekir.</p>
-            <form id="cp-key-form">
-                <label>Yeni key</label>
-                <input type="text" id="cp-key-input" placeholder="Mevcut veya yeni key" autocomplete="off" />
-                <button type="submit">Key güncelle</button>
-            </form>
+        <div class="cp-block" id="cp-block-site">
+            <div class="cp-form cp-section">
+                <h3>Site ayarları</h3>
+                <p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Ana sayfa metinleri ve linkler.</p>
+                <form id="cp-site-form">
+                    <label>Badge metni</label>
+                    <input type="text" id="cp-site-badge" placeholder="Discord Bot - Tool" />
+                    <label>Ana başlık (satır 1)</label>
+                    <input type="text" id="cp-site-title1" placeholder="Hesabını bir üst" />
+                    <label>Ana başlık (satır 2)</label>
+                    <input type="text" id="cp-site-title2" placeholder="seviyeye taşı." />
+                    <label>Alt başlık</label>
+                    <input type="text" id="cp-site-desc" placeholder="Self Bot - Tool" />
+                    <label>Destek sunucusu linki</label>
+                    <input type="url" id="cp-site-support" placeholder="https://discord.gg/..." />
+                    <label>Developer adı</label>
+                    <input type="text" id="cp-site-dev" placeholder="@frezzgodd_" />
+                    <label>Developer linki</label>
+                    <input type="url" id="cp-site-devlink" placeholder="https://..." />
+                    <button type="submit">Kaydet</button>
+                </form>
+            </div>
+            <div class="cp-form cp-section">
+                <h3>Giriş key</h3>
+                <p style="color: var(--white-soft); font-size: 0.85rem; margin-bottom: 0.75rem;">Kontrol paneline giriş key'i. Değiştirirsen yeni key ile girmen gerekir.</p>
+                <form id="cp-key-form">
+                    <label>Yeni key</label>
+                    <input type="text" id="cp-key-input" placeholder="Mevcut veya yeni key" autocomplete="off" />
+                    <button type="submit">Key güncelle</button>
+                </form>
+            </div>
         </div>
     </div>
     <div class="hacker-stream" id="hacker-stream"></div>
@@ -577,7 +618,17 @@
                     btn.classList.add('is-active');
                     var panel = document.getElementById('tab-' + t);
                     if (panel) panel.classList.add('is-active');
-                    if (t === 'panel') { renderCpBotList(); loadCpSiteForm(); updateCpStats(); }
+                    if (t === 'panel') { renderCpBotList(); renderCpSaleList(); loadCpSiteForm(); updateCpStats(); }
+                });
+            });
+            document.querySelectorAll('.cp-subnav-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var id = btn.getAttribute('data-cp');
+                    document.querySelectorAll('.cp-subnav-btn').forEach(function(b) { b.classList.remove('is-active'); });
+                    document.querySelectorAll('.cp-block').forEach(function(b) { b.classList.remove('is-active'); });
+                    btn.classList.add('is-active');
+                    var block = document.getElementById('cp-block-' + id);
+                    if (block) block.classList.add('is-active');
                 });
             });
             var cpForm = document.getElementById('cp-bot-form');
@@ -641,8 +692,83 @@
             function updateCpStats() {
                 var n = document.getElementById('cp-stat-bots');
                 if (n) n.textContent = getBots().length;
+                var sn = document.getElementById('cp-stat-sales');
+                if (sn) sn.textContent = getSales().length;
                 var k = document.getElementById('cp-stat-key');
                 if (k) k.textContent = getAdminKey().length ? '***' : '—';
+            }
+            var SALES_KEY = 'site_sales';
+            function getSales() {
+                try { var s = localStorage.getItem(SALES_KEY); if (s) { var a = JSON.parse(s); if (Array.isArray(a)) return a; } } catch (_) {}
+                return [];
+            }
+            function saveSales(list) {
+                try { localStorage.setItem(SALES_KEY, JSON.stringify(list)); } catch (_) {}
+            }
+            var saleListEl = document.getElementById('cp-sale-list');
+            var saleForm = document.getElementById('cp-sale-form');
+            var editingSaleId = null;
+            function renderCpSaleList() {
+                if (!saleListEl) return;
+                var sales = getSales();
+                saleListEl.innerHTML = '';
+                sales.forEach(function(s) {
+                    var div = document.createElement('div');
+                    div.className = 'cp-sale-item';
+                    var priceStr = (s.price || '') + (s.currency ? ' ' + s.currency : '');
+                    div.innerHTML = '<span>' + (s.title || 'Satış').replace(/</g, '&lt;') + '</span><span class="price">' + priceStr.replace(/</g, '&lt;') + '</span><div class="cp-bot-actions"><button type="button" class="edit" data-id="' + s.id + '">Düzenle</button><button type="button" class="del" data-id="' + s.id + '">Sil</button></div>';
+                    saleListEl.appendChild(div);
+                });
+                saleListEl.querySelectorAll('button.edit').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var id = btn.getAttribute('data-id');
+                        var sales = getSales();
+                        var s = sales.find(function(x) { return x.id === id; });
+                        if (!s) return;
+                        editingSaleId = id;
+                        document.getElementById('cp-sale-title').value = s.title || '';
+                        document.getElementById('cp-sale-desc').value = s.description || '';
+                        document.getElementById('cp-sale-price').value = s.price || '';
+                        document.getElementById('cp-sale-currency').value = s.currency || '';
+                        document.getElementById('cp-sale-link').value = s.link || '';
+                        saleForm.querySelector('button[type="submit"]').textContent = 'Güncelle';
+                    });
+                });
+                saleListEl.querySelectorAll('button.del').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var id = btn.getAttribute('data-id');
+                        if (!confirm('Bu satışı silmek istediğine emin misin?')) return;
+                        var sales = getSales().filter(function(x) { return x.id !== id; });
+                        saveSales(sales);
+                        renderCpSaleList();
+                        updateCpStats();
+                        if (editingSaleId === id) { editingSaleId = null; saleForm.reset(); saleForm.querySelector('button[type="submit"]').textContent = 'Satış Ekle'; }
+                    });
+                });
+            }
+            if (saleForm) {
+                saleForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var title = (document.getElementById('cp-sale-title').value || '').trim();
+                    var description = (document.getElementById('cp-sale-desc').value || '').trim();
+                    var price = (document.getElementById('cp-sale-price').value || '').trim();
+                    var currency = (document.getElementById('cp-sale-currency').value || '').trim();
+                    var link = (document.getElementById('cp-sale-link').value || '').trim();
+                    var sales = getSales();
+                    if (editingSaleId) {
+                        var idx = sales.findIndex(function(x) { return x.id === editingSaleId; });
+                        if (idx >= 0) sales[idx] = { id: editingSaleId, title: title, description: description, price: price, currency: currency, link: link };
+                        saveSales(sales);
+                        editingSaleId = null;
+                        saleForm.querySelector('button[type="submit"]').textContent = 'Satış Ekle';
+                    } else {
+                        sales.push({ id: 'sale_' + Date.now(), title: title, description: description, price: price, currency: currency || 'TL', link: link });
+                        saveSales(sales);
+                    }
+                    saleForm.reset();
+                    renderCpSaleList();
+                    updateCpStats();
+                });
             }
             var siteForm = document.getElementById('cp-site-form');
             if (siteForm) {
