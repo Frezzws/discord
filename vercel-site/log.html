@@ -309,6 +309,16 @@
         .cp-sale-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem 1rem; background: var(--gray-2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.5rem; }
         .cp-sale-item span { font-size: 0.9rem; color: var(--white); }
         .cp-sale-item .price { font-family: var(--font-mono); color: var(--white-soft); }
+        .panel-key-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 1rem; }
+        .panel-key-overlay.show { display: flex; }
+        .panel-key-box { background: var(--gray-2); border: 1px solid var(--border); border-radius: 14px; padding: 1.75rem; max-width: 360px; width: 100%; }
+        .panel-key-box h2 { font-size: 1rem; margin-bottom: 1rem; color: var(--white); }
+        .panel-key-box input { width: 100%; padding: 0.65rem 0.9rem; font-size: 0.95rem; background: var(--gray-1); border: 1px solid var(--border); border-radius: 8px; color: var(--white); margin-bottom: 0.75rem; font-family: inherit; }
+        .panel-key-box input:focus { outline: none; border-color: var(--border-hover); }
+        .panel-key-box button { padding: 0.6rem 1.2rem; font-size: 0.9rem; font-weight: 600; background: var(--white); color: var(--black); border: none; border-radius: 8px; cursor: pointer; font-family: inherit; width: 100%; }
+        .panel-key-box button:hover { opacity: 0.95; }
+        .panel-key-err { color: #f87171; font-size: 0.85rem; margin-top: 0.5rem; display: none; }
+        .panel-key-err.show { display: block; }
     </style>
 </head>
 <body>
@@ -323,6 +333,14 @@
         </div>
     </div>
     <div class="main-content" id="main-content">
+    <div class="panel-key-overlay" id="panel-key-overlay">
+        <div class="panel-key-box">
+            <h2>Kontrol paneline girmek için key girin</h2>
+            <input type="text" id="panel-key-input" placeholder="Key" autocomplete="off" />
+            <button type="button" id="panel-key-btn">Giriş</button>
+            <p class="panel-key-err" id="panel-key-err">Yanlış key.</p>
+        </div>
+    </div>
     <div class="bg-wrap"></div>
     <div class="bg-log-glow"></div>
     <div class="bg-grid"></div>
@@ -610,9 +628,44 @@
                     localStorage.setItem(BOTS_KEY, JSON.stringify(list));
                 } catch (_) {}
             }
+            var PANEL_KEY_STORAGE = 'log_panel_key_ok';
+            var panelKeyOverlay = document.getElementById('panel-key-overlay');
+            var panelKeyInput = document.getElementById('panel-key-input');
+            var panelKeyBtn = document.getElementById('panel-key-btn');
+            var panelKeyErr = document.getElementById('panel-key-err');
+            function openPanelAfterKey() {
+                document.querySelectorAll('.admin-nav-btn').forEach(function(b) { b.classList.remove('is-active'); });
+                document.querySelectorAll('.admin-panel').forEach(function(p) { p.classList.remove('is-active'); });
+                var panelBtn = document.querySelector('.admin-nav-btn[data-tab="panel"]');
+                var panel = document.getElementById('tab-panel');
+                if (panelBtn) panelBtn.classList.add('is-active');
+                if (panel) panel.classList.add('is-active');
+                renderCpBotList(); renderCpSaleList(); loadCpSiteForm(); updateCpStats();
+            }
+            if (panelKeyBtn && panelKeyInput) {
+                panelKeyBtn.addEventListener('click', function() {
+                    panelKeyErr.classList.remove('show');
+                    var val = (panelKeyInput.value || '').trim();
+                    if (val === getAdminKey()) {
+                        sessionStorage.setItem(PANEL_KEY_STORAGE, '1');
+                        if (panelKeyOverlay) panelKeyOverlay.classList.remove('show');
+                        panelKeyInput.value = '';
+                        openPanelAfterKey();
+                    } else {
+                        panelKeyErr.classList.add('show');
+                    }
+                });
+                panelKeyInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); panelKeyBtn.click(); } });
+            }
             document.querySelectorAll('.admin-nav-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     var t = btn.getAttribute('data-tab');
+                    if (t === 'panel' && sessionStorage.getItem(PANEL_KEY_STORAGE) !== '1') {
+                        if (panelKeyOverlay) panelKeyOverlay.classList.add('show');
+                        if (panelKeyInput) { panelKeyInput.value = ''; panelKeyInput.focus(); }
+                        if (panelKeyErr) panelKeyErr.classList.remove('show');
+                        return;
+                    }
                     document.querySelectorAll('.admin-nav-btn').forEach(function(b) { b.classList.remove('is-active'); });
                     document.querySelectorAll('.admin-panel').forEach(function(p) { p.classList.remove('is-active'); });
                     btn.classList.add('is-active');
